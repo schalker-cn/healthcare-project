@@ -2,10 +2,10 @@
 /backend/.gradle
 
 # Ignore Gradle build output directory
-backend/build
+/backend/build
 
 # Ignore VS Code
-backend/.vscode/
+/backend/.vscode/
 
 # Ignore IntelliJ IDEA
-backend/.idea
+/backend/.idea

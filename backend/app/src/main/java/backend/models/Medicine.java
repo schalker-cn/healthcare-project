@@ -13,16 +13,22 @@ public final class Medicine {
     private final String medicineID;
 
     @Property()
+    private final String producerID;
+
+    @Property()
     private final String name;
 
     @Property()
     private final String productionDate;
 
     @Property()
+    private final String expirationDate;
+
+    @Property()
     private final Object currentOwner;
 
     @Property()
-    private final String ownerHistory;
+    private final String previousOwners;
 
     public String getMedicineID() {
         return medicineID;
@@ -40,16 +46,18 @@ public final class Medicine {
         return currentOwner;
     }
 
-    public String getOwnerHistory() {
-        return ownerHistory;
+    public String getPreviousOwners() {
+        return previousOwners;
     }
 
-    public Medicine(@JsonProperty("medicineID") String medicineID, @JsonProperty("name") String name, @JsonProperty("productionDate") String productionDate, @JsonProperty("currentOwner") Object currentOwner, @JsonProperty("ownerHistory") String ownerHistory) {
+    public Medicine(@JsonProperty("medicineID") String medicineID, @JsonProperty("producerID") String producerID, @JsonProperty("name") String name, @JsonProperty("productionDate") String productionDate, @JsonProperty("expirationDate") String expirationDate, @JsonProperty("currentOwner") Object currentOwner, @JsonProperty("ownerHistory") String previousOwners) {
         this.medicineID = medicineID;
+        this.producerID = producerID;
         this.name = name;
         this.productionDate = productionDate;
+        this.expirationDate = expirationDate;
         this.currentOwner = currentOwner;
-        this.ownerHistory = ownerHistory;
+        this.previousOwners = previousOwners;
     }
 
     @Override
@@ -57,11 +65,11 @@ public final class Medicine {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Medicine medicine = (Medicine) o;
-        return Objects.equals(getMedicineID(), medicine.getMedicineID()) && Objects.equals(getName(), medicine.getName()) && Objects.equals(getProductionDate(), medicine.getProductionDate()) && Objects.equals(getCurrentOwner(), medicine.getCurrentOwner()) && Objects.equals(getOwnerHistory(), medicine.getOwnerHistory());
+        return Objects.equals(getMedicineID(), medicine.getMedicineID()) && Objects.equals(getName(), medicine.getName()) && Objects.equals(getProductionDate(), medicine.getProductionDate()) && Objects.equals(getCurrentOwner(), medicine.getCurrentOwner()) && Objects.equals(getPreviousOwners(), medicine.getPreviousOwners());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getMedicineID(), getName(), getProductionDate(), getCurrentOwner(), getOwnerHistory());
+        return Objects.hash(getMedicineID(), getName(), getProductionDate(), getCurrentOwner(), getPreviousOwners());
     }
 }

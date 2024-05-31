@@ -17,6 +17,12 @@ public final class Hospital {
     @Property()
     private final String address;
 
+    @Property()
+    private final String phone;
+
+    @Property()
+    private final String email;
+
     public String getHospitalID() {
         return hospitalID;
     }
@@ -29,10 +35,20 @@ public final class Hospital {
         return address;
     }
 
-    public Hospital(@JsonProperty("hospitalID") String hospitalID, @JsonProperty("name") String name, @JsonProperty("address") String address) {
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public Hospital(@JsonProperty("hospitalID") String hospitalID, @JsonProperty("name") String name, @JsonProperty("address") String address, @JsonProperty("phone") String phone, @JsonProperty("email") String email) {
         this.hospitalID = hospitalID;
         this.name = name;
         this.address = address;
+        this.phone = phone;
+        this.email = email;
     }
 
     @Override
@@ -45,6 +61,6 @@ public final class Hospital {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getHospitalID(), getName(), getAddress());
+        return Objects.hash(getHospitalID(), getName(), getAddress(), getPhone(), getEmail());
     }
 }

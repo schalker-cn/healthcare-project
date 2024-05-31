@@ -13,6 +13,9 @@ public final class Patient {
     private final String patientID;
 
     @Property()
+    private final String hospitalID;
+
+    @Property()
     private final String name;
 
     @Property()
@@ -29,6 +32,14 @@ public final class Patient {
 
     @Property()
     private final List accessToDoctors;
+
+    public String getPatientID() {
+        return patientID;
+    }
+
+    public String getHospitalID() {
+        return hospitalID;
+    }
 
     public String getName() {
         return name;
@@ -62,8 +73,9 @@ public final class Patient {
         return age == patient.age && Objects.equals(name, patient.name) && Objects.equals(gender, patient.gender) && Objects.equals(email, patient.email) && Objects.equals(phone, patient.phone) && Objects.equals(accessToDoctors, patient.accessToDoctors);
     }
 
-    public Patient(@JsonProperty("patientID") String patientID, @JsonProperty("name") String name, int age, @JsonProperty("gender") String gender, @JsonProperty("email") String email, @JsonProperty("phone") String phone, @JsonProperty("accessToDoctors") List accessToDoctors) {
+    public Patient(@JsonProperty("patientID") String patientID, @JsonProperty("hospitalID") String hospitalID, @JsonProperty("name") String name, int age, @JsonProperty("gender") String gender, @JsonProperty("email") String email, @JsonProperty("phone") String phone, @JsonProperty("accessToDoctors") List accessToDoctors) {
         this.patientID = patientID;
+        this.hospitalID = hospitalID;
         this.name = name;
         this.age = age;
         this.gender = gender;
@@ -74,6 +86,6 @@ public final class Patient {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), getAge(), getGender(), getEmail(), getPhone(), getAccessToDoctors());
+        return Objects.hash(getPatientID(), getHospitalID(), getName(), getAge(), getGender(), getEmail(), getPhone(), getAccessToDoctors());
     }
 }

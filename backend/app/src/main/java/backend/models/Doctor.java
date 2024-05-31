@@ -25,6 +25,12 @@ public final class Doctor {
     private final String address;
 
     @Property()
+    private final String email;
+
+    @Property()
+    private final String phone;
+
+    @Property()
     private final String hospitalID;
 
     @Property()
@@ -50,6 +56,14 @@ public final class Doctor {
         return address;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
     public String getHospitalID() {
         return hospitalID;
     }
@@ -58,12 +72,14 @@ public final class Doctor {
         return speciality;
     }
 
-    public Doctor(@JsonProperty("doctorID") String doctorID, @JsonProperty("name") String name, @JsonProperty("age") int age, @JsonProperty("gender") String gender, @JsonProperty("address") String address, @JsonProperty("hospitalID") String hospitalID, @JsonProperty("speciality") String speciality) {
+    public Doctor(@JsonProperty("doctorID") String doctorID, @JsonProperty("name") String name, @JsonProperty("age") int age, @JsonProperty("gender") String gender, @JsonProperty("address") String address, @JsonProperty("email") String email, @JsonProperty("phone") String phone, @JsonProperty("hospitalID") String hospitalID, @JsonProperty("speciality") String speciality) {
         this.doctorID = doctorID;
         this.name = name;
         this.age = age;
         this.gender = gender;
         this.address = address;
+        this.email = email;
+        this.phone = phone;
         this.hospitalID = hospitalID;
         this.speciality = speciality;
     }
@@ -78,6 +94,6 @@ public final class Doctor {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getDoctorID(), getName(), getAge(), getGender(), getAddress(), getHospitalID(), getSpeciality());
+        return Objects.hash(getDoctorID(), getName(), getAge(), getGender(), getAddress(), getEmail(), getPhone(), getHospitalID(), getSpeciality());
     }
 }

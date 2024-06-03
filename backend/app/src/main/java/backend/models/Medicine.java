@@ -25,13 +25,17 @@ public final class Medicine {
     private final String expirationDate;
 
     @Property()
-    private final Object currentOwner;
+    private final String currentOwner;
 
     @Property()
     private final String previousOwners;
 
     public String getMedicineID() {
         return medicineID;
+    }
+
+    public String getProducerID() {
+        return producerID;
     }
 
     public String getName() {
@@ -42,6 +46,10 @@ public final class Medicine {
         return productionDate;
     }
 
+    public String getExpirationDate() {
+        return expirationDate;
+    }
+
     public Object getCurrentOwner() {
         return currentOwner;
     }
@@ -50,7 +58,7 @@ public final class Medicine {
         return previousOwners;
     }
 
-    public Medicine(@JsonProperty("medicineID") String medicineID, @JsonProperty("producerID") String producerID, @JsonProperty("name") String name, @JsonProperty("productionDate") String productionDate, @JsonProperty("expirationDate") String expirationDate, @JsonProperty("currentOwner") Object currentOwner, @JsonProperty("ownerHistory") String previousOwners) {
+    public Medicine(@JsonProperty("medicineID") String medicineID, @JsonProperty("producerID") String producerID, @JsonProperty("name") String name, @JsonProperty("productionDate") String productionDate, @JsonProperty("expirationDate") String expirationDate, @JsonProperty("currentOwner") String currentOwner, @JsonProperty("ownerHistory") String previousOwners) {
         this.medicineID = medicineID;
         this.producerID = producerID;
         this.name = name;

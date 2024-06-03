@@ -81,6 +81,22 @@ public class HealthRecordContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
+    public HealthRecord updateHealthRecord(final Context ctx, String recordID, String date, String patientID, String doctorID, String symptom, String diagnosis, String treatment, Prescription prescription) {
+        ChaincodeStub stub = ctx.getStub();
+
+        if(!RecordExists(ctx, recordID)) {
+            String errorMessage = String.format("Health record %s does not exist", recordID);
+            System.out.println(errorMessage);
+            throw new ChaincodeException(errorMessage, HealthRecordErrors.RECORD_NOT_FOUND.toString());
+        }
+
+        HealthRecord newRecord = new HealthRecord(recordID, date, patientID, doctorID, symptom, diagnosis, treatment, prescription);
+        String recordJSON = genson.serialize(newRecord);
+        stub.putStringState(recordID, recordJSON);
+        return newRecord;
+    }
+
+    @Transaction(intent = Transaction.TYPE.SUBMIT)
     public void DeleteHealthRecord(Context ctx, String recordID) {
         ChaincodeStub stub = ctx.getStub();
 

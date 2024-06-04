@@ -12,3 +12,20 @@
 # Ignore IntelliJ IDEA
 /backend/.idea
 /.idea
+
+#Ignore unnecessary files in network directory
+/backend/network/channel-artifacts/*.tx
+/backend/network/channel-artifacts/*.block
+/backend/network/ledgers
+/backend/network/ledgers-backup
+/backend/network/channel-artifacts/*.json
+/backend/network/channel-artifacts/*.pb
+/backend/network/org3-artifacts/crypto-config/*
+/backend/network/organizations/fabric-ca/ordererOrg/*
+/backend/network/organizations/fabric-ca/org1/*
+/backend/network/organizations/fabric-ca/org2/*
+/backend/network/organizations/ordererOrganizations/*
+/backend/network/organizations/peerOrganizations/*
+/backend/network/system-genesis-block/*
+/backend/network/*.tar.gz
+/backend/network/log.txt

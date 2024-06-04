@@ -14,7 +14,7 @@ plugins {
 
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'checkstyle'
-    id 'jacoco'
+    // id 'jacoco'
 }
 
 repositories {
@@ -45,7 +45,20 @@ application {
     mainClass = 'backend.App'
 }
 
-tasks.named('test') {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
+checkstyle {
+    toolVersion '8.21'
+    configFile rootProject.file('config/checkstyle/checkstyle.xml')
 }
+
+checkstyleMain {
+    source ='src/main/java'
+}
+
+checkstyleTest {
+    source ='src/test/java'
+}
+
+// tasks.named('test') {
+//     // Use JUnit Platform for unit tests.
+//     useJUnitPlatform()
+// }

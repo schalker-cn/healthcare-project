@@ -61,6 +61,7 @@ NONWORKING_VERSIONS="^1\.0\. ^1\.1\. ^1\.2\. ^1\.3\. ^1\.4\."
 # of go or other items could be added.
 function checkPrereqs() {
   ## Check if your have cloned the peer binaries and configuration files.
+  
   peer version > /dev/null 2>&1
 
   if [[ $? -ne 0 || ! -d "../config" ]]; then

@@ -47,6 +47,7 @@ public class HealthRecordContract implements ContractInterface {
     public void InitLedger(final Context ctx) {
         ChaincodeStub stub = ctx.getStub();
         // add mock health records here
+        System.out.println("ledger successfully initiated.");
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)

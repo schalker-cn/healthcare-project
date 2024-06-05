@@ -35,3 +35,6 @@
 /backend/network/system-genesis-block/*
 /backend/network/*.tar.gz
 /backend/network/log.txt
+
+#ignore java build file
+/backend/app/bin/

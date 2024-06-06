@@ -1,11 +1,11 @@
 package backend.contracts;
 
-import backend.models.Medicine;
-import com.owlike.genson.Genson;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hyperledger.fabric.contract.Context;
 import org.hyperledger.fabric.contract.ContractInterface;
 import org.hyperledger.fabric.contract.annotation.Contract;
-import org.hyperledger.fabric.contract.annotation.Default;
 import org.hyperledger.fabric.contract.annotation.Info;
 import org.hyperledger.fabric.contract.annotation.Transaction;
 import org.hyperledger.fabric.shim.ChaincodeException;
@@ -13,18 +13,20 @@ import org.hyperledger.fabric.shim.ChaincodeStub;
 import org.hyperledger.fabric.shim.ledger.KeyValue;
 import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.owlike.genson.Genson;
+
+import backend.models.Medicine;
 
 @Contract(
         name = "MedicineContract",
         info = @Info(
                 title = "medicine record contract",
-                description = "contract to the life cycle of medicines"
+                description = "contract to the life cycle of medicines",
+                version= "1.0.0"
         )
 )
-@Default
-public class MedicineContract implements ContractInterface {
+
+public final class MedicineContract implements ContractInterface {
     private final Genson genson = new Genson();
 
     private enum MedicineRecordErrors {
@@ -46,7 +48,7 @@ public class MedicineContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public Medicine CreateMedicine(final Context ctx, String medicineID, String producerID, String name, String productionDate, String expirationDate, String currentOwner, String previousOwners) {
+    public Medicine CreateMedicine(final Context ctx, final String medicineID, final String producerID, final String name, final String productionDate, final String expirationDate, final String currentOwner, final String previousOwners) {
         ChaincodeStub stub = ctx.getStub();
 
         if (MedicineExists(ctx, medicineID)) {
@@ -62,7 +64,7 @@ public class MedicineContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
-    public Medicine ReadMedicine(Context ctx, final String medicineID) {
+    public Medicine ReadMedicine(final Context ctx, final String medicineID) {
         ChaincodeStub stub = ctx.getStub();
         String medicineJSON = stub.getStringState(medicineID);
 
@@ -77,7 +79,7 @@ public class MedicineContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public Medicine UpdateMedicine(final Context ctx, String medicineID, String producerID, String name, String productionDate, String expirationDate, String currentOwner, String previousOwners) {
+    public Medicine UpdateMedicine(final Context ctx, final String medicineID, final String producerID, final String name, final String productionDate, final String expirationDate, final String currentOwner, final String previousOwners) {
         ChaincodeStub stub = ctx.getStub();
 
         if (!MedicineExists(ctx, medicineID)) {
@@ -93,7 +95,7 @@ public class MedicineContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public void DeleteMedicine(Context ctx, String medicineID) {
+    public void DeleteMedicine(final Context ctx, final String medicineID) {
         ChaincodeStub stub = ctx.getStub();
 
         if (!MedicineExists(ctx, medicineID)) {

@@ -1,34 +1,35 @@
 package backend.contracts;
 
-import backend.models.HealthRecord;
-import backend.models.Prescription;
-import com.owlike.genson.Genson;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hyperledger.fabric.contract.Context;
 import org.hyperledger.fabric.contract.ContractInterface;
 import org.hyperledger.fabric.contract.annotation.Contract;
 import org.hyperledger.fabric.contract.annotation.Default;
 import org.hyperledger.fabric.contract.annotation.Info;
 import org.hyperledger.fabric.contract.annotation.Transaction;
-import org.hyperledger.fabric.shim.Chaincode;
 import org.hyperledger.fabric.shim.ChaincodeException;
 import org.hyperledger.fabric.shim.ChaincodeStub;
 import org.hyperledger.fabric.shim.ledger.KeyValue;
 import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import com.owlike.genson.Genson;
+
+import backend.models.HealthRecord;
+import backend.models.Prescription;
 
 @Contract(
         name = "HealthRecordContract",
         info = @Info(
                 title = "health record contract",
-                description = "contract to handle health record modification"
+                description = "contract to handle health record modification",
+                version= "1.0.0"
         )
 )
 
 @Default
-public class HealthRecordContract implements ContractInterface {
+public final class HealthRecordContract implements ContractInterface {
     private final Genson genson = new Genson();
 
     private enum HealthRecordErrors {
@@ -47,11 +48,13 @@ public class HealthRecordContract implements ContractInterface {
     public void InitLedger(final Context ctx) {
         ChaincodeStub stub = ctx.getStub();
         // add mock health records here
-        System.out.println("ledger successfully initiated.");
+        Prescription prescription = new Prescription("001", "001", 2, 2);
+        CreateHealthRecord(ctx, "123", "2024-06-06", "001", "001", "headache, fever", "have a cold", "take medicine and get rest", prescription);
+        
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public HealthRecord CreateHealthRecord(final Context ctx, String recordID, String date, String patientID, String doctorID, String symptom, String diagnosis, String treatment, Prescription prescription) {
+    public HealthRecord CreateHealthRecord(final Context ctx, final String recordID, final String date, final String patientID, final String doctorID, final String symptom, final String diagnosis, final String treatment, final Prescription prescription) {
         ChaincodeStub stub = ctx.getStub();
 
         if (RecordExists(ctx, recordID)) {
@@ -67,7 +70,7 @@ public class HealthRecordContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
-    public HealthRecord ReadHealthRecord(Context ctx, final String recordID) {
+    public HealthRecord ReadHealthRecord(final Context ctx, final String recordID) {
         ChaincodeStub stub = ctx.getStub();
         String recordJSON = stub.getStringState(recordID);
 
@@ -82,7 +85,7 @@ public class HealthRecordContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public HealthRecord updateHealthRecord(final Context ctx, String recordID, String date, String patientID, String doctorID, String symptom, String diagnosis, String treatment, Prescription prescription) {
+    public HealthRecord updateHealthRecord(final Context ctx, final String recordID, final String date, final String patientID, final String doctorID, final String symptom, final String diagnosis, final String treatment, final Prescription prescription) {
         ChaincodeStub stub = ctx.getStub();
 
         if(!RecordExists(ctx, recordID)) {
@@ -98,7 +101,7 @@ public class HealthRecordContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public void DeleteHealthRecord(Context ctx, String recordID) {
+    public void DeleteHealthRecord(final Context ctx, final String recordID) {
         ChaincodeStub stub = ctx.getStub();
 
         if(!RecordExists(ctx, recordID)) {

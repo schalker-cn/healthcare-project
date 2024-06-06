@@ -36,7 +36,7 @@ import com.owlike.genson.Genson;
                         email = "a.transfer@example.com",
                         name = "Adrian Transfer",
                         url = "https://hyperledger.example.com")))
-@Default
+
 public final class AssetTransfer implements ContractInterface {
 
     private final Genson genson = new Genson();

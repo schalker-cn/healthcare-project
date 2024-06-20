@@ -48,13 +48,12 @@ public final class HealthRecordContract implements ContractInterface {
     public void InitLedger(final Context ctx) {
         ChaincodeStub stub = ctx.getStub();
         // add mock health records here
-        Prescription prescription = new Prescription("001", "001", 2, 2);
-        CreateHealthRecord(ctx, "123", "2024-06-06", "001", "001", "headache, fever", "have a cold", "take medicine and get rest", prescription);
+        CreateHealthRecord(ctx, "123", "2024-06-06", "001", "001", "headache, fever", "have a cold", "take medicine and get rest", "001");
         
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public HealthRecord CreateHealthRecord(final Context ctx, final String recordID, final String date, final String patientID, final String doctorID, final String symptom, final String diagnosis, final String treatment, final Prescription prescription) {
+    public HealthRecord CreateHealthRecord(final Context ctx, final String recordID, final String date, final String patientID, final String doctorID, final String symptom, final String diagnosis, final String treatment, final String prescriptionID) {
         ChaincodeStub stub = ctx.getStub();
 
         if (RecordExists(ctx, recordID)) {
@@ -63,7 +62,7 @@ public final class HealthRecordContract implements ContractInterface {
             throw new ChaincodeException(errorMessage, HealthRecordErrors.RECORD_ALREADY_EXISTS.toString());
         }
 
-        HealthRecord record = new HealthRecord(recordID, date, patientID, doctorID, symptom, diagnosis, treatment, prescription);
+        HealthRecord record = new HealthRecord(recordID, date, patientID, doctorID, symptom, diagnosis, treatment, prescriptionID);
         String recordJSON = genson.serialize(record);
         stub.putStringState(recordID, recordJSON);
         return record;
@@ -85,7 +84,7 @@ public final class HealthRecordContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public HealthRecord updateHealthRecord(final Context ctx, final String recordID, final String date, final String patientID, final String doctorID, final String symptom, final String diagnosis, final String treatment, final Prescription prescription) {
+    public HealthRecord updateHealthRecord(final Context ctx, final String recordID, final String date, final String patientID, final String doctorID, final String symptom, final String diagnosis, final String treatment, final String prescriptionID) {
         ChaincodeStub stub = ctx.getStub();
 
         if(!RecordExists(ctx, recordID)) {
@@ -94,7 +93,7 @@ public final class HealthRecordContract implements ContractInterface {
             throw new ChaincodeException(errorMessage, HealthRecordErrors.RECORD_NOT_FOUND.toString());
         }
 
-        HealthRecord newRecord = new HealthRecord(recordID, date, patientID, doctorID, symptom, diagnosis, treatment, prescription);
+        HealthRecord newRecord = new HealthRecord(recordID, date, patientID, doctorID, symptom, diagnosis, treatment, prescriptionID);
         String recordJSON = genson.serialize(newRecord);
         stub.putStringState(recordID, recordJSON);
         return newRecord;

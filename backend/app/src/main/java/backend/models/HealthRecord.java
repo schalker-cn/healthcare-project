@@ -1,10 +1,11 @@
 package backend.models;
 
-import com.owlike.genson.annotation.JsonProperty;
+import java.util.Objects;
+
 import org.hyperledger.fabric.contract.annotation.DataType;
 import org.hyperledger.fabric.contract.annotation.Property;
 
-import java.util.Objects;
+import com.owlike.genson.annotation.JsonProperty;
 
 @DataType()
 public final class HealthRecord {
@@ -31,7 +32,7 @@ public final class HealthRecord {
     private final String treatment;
 
     @Property()
-    private final Prescription prescription;
+    private final String prescriptionID;
 
     public String getRecordID() {
         return recordID;
@@ -61,11 +62,11 @@ public final class HealthRecord {
         return treatment;
     }
 
-    public Prescription getPrescription() {
-        return prescription;
+    public String getPrescriptionID() {
+        return prescriptionID;
     }
 
-    public HealthRecord(@JsonProperty("recordID") String recordID, @JsonProperty("date") String date, @JsonProperty("patientID") String patientID, @JsonProperty("doctorID") String doctorID, @JsonProperty("symptom") String symptom, @JsonProperty("diagnosis") String diagnosis, @JsonProperty("treatment") String treatment, @JsonProperty("prescription") Prescription prescription) {
+    public HealthRecord(@JsonProperty("recordID") String recordID, @JsonProperty("date") String date, @JsonProperty("patientID") String patientID, @JsonProperty("doctorID") String doctorID, @JsonProperty("symptom") String symptom, @JsonProperty("diagnosis") String diagnosis, @JsonProperty("treatment") String treatment, @JsonProperty("prescriptionID") String prescriptionID) {
         this.recordID = recordID;
         this.date = date;
         this.patientID = patientID;
@@ -73,7 +74,7 @@ public final class HealthRecord {
         this.symptom = symptom;
         this.diagnosis = diagnosis;
         this.treatment = treatment;
-        this.prescription = prescription;
+        this.prescriptionID = prescriptionID;
     }
 
     @Override
@@ -81,11 +82,11 @@ public final class HealthRecord {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         HealthRecord that = (HealthRecord) o;
-        return Objects.equals(getRecordID(), that.getRecordID()) && Objects.equals(getDate(), that.getDate()) && Objects.equals(getPatientID(), that.getPatientID()) && Objects.equals(getDoctorID(), that.getDoctorID()) && Objects.equals(getSymptom(), that.getSymptom()) && Objects.equals(getDiagnosis(), that.getDiagnosis()) && Objects.equals(getTreatment(), that.getTreatment()) && Objects.equals(getPrescription(), that.getPrescription());
+        return Objects.equals(getRecordID(), that.getRecordID()) && Objects.equals(getDate(), that.getDate()) && Objects.equals(getPatientID(), that.getPatientID()) && Objects.equals(getDoctorID(), that.getDoctorID()) && Objects.equals(getSymptom(), that.getSymptom()) && Objects.equals(getDiagnosis(), that.getDiagnosis()) && Objects.equals(getTreatment(), that.getTreatment()) && Objects.equals(getPrescriptionID(), that.getPrescriptionID());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getRecordID(), getDate(), getPatientID(), getDoctorID(), getSymptom(), getDiagnosis(), getTreatment(), getPrescription());
+        return Objects.hash(getRecordID(), getDate(), getPatientID(), getDoctorID(), getSymptom(), getDiagnosis(), getTreatment(), getPrescriptionID());
     }
 }

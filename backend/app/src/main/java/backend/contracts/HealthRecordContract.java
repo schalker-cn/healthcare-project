@@ -41,7 +41,7 @@ public final class HealthRecordContract implements ContractInterface {
     public boolean RecordExists(final Context ctx, final String recordID) {
         ChaincodeStub stub = ctx.getStub();
         String recordJSON = stub.getStringState(recordID);
-        return (recordJSON != null && recordJSON.isEmpty());
+        return (recordJSON != null && !recordJSON.isEmpty());
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)

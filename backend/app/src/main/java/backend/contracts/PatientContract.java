@@ -27,7 +27,6 @@ import backend.models.Patient;
         )
 )
 
-@Default
 public final class PatientContract implements ContractInterface {
     private final Genson genson = new Genson();
 
@@ -40,13 +39,14 @@ public final class PatientContract implements ContractInterface {
     public boolean PatientExists(final Context ctx, final String patientID) {
         ChaincodeStub stub = ctx.getStub();
         String patientJSON = stub.getStringState(patientID);
-        return (patientJSON != null && patientJSON.isEmpty());
+        return (patientJSON != null && !patientJSON.isEmpty());
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public void InitLedger(final Context ctx) {
         ChaincodeStub stub = ctx.getStub();
         // add mock patient records here
+        System.out.println("init the ledger");
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)

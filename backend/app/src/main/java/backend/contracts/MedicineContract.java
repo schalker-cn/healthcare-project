@@ -45,6 +45,7 @@ public final class MedicineContract implements ContractInterface {
     public void InitLedger(final Context ctx) {
         ChaincodeStub stub = ctx.getStub();
         // add mock medicine records here
+        System.out.println("init the ledger");
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)

@@ -17,15 +17,19 @@ java {
 
 repositories {
 	mavenCentral()
+	maven {
+        url 'https://jitpack.io'
+    }
 }
 
 dependencies {
+	implementation project(':app')
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'org.hyperledger.fabric:fabric-gateway:1.4.0'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
-}
+// tasks.named('test') {
+// 	useJUnitPlatform()
+// }

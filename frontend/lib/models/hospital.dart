@@ -5,10 +5,11 @@ class Hospital {
   String phone;
   String email;
 
-  Hospital(
-      {required this.hospitalId,
-      required this.name,
-      required this.address,
-      required this.phone,
-      required this.email});
+  Hospital({
+    required this.hospitalId,
+    required this.name,
+    required this.address,
+    required this.phone,
+    required this.email,
+  });
 }

@@ -8,7 +8,10 @@
 # Ignore VS Code
 /backend/.vscode/
 /.vscode/
+/frontend/dummy_api/venv/
 
 # Ignore IntelliJ IDEA
 /backend/.idea
 /.idea
+**/dummy_api/
+/frontend/dummy_api/

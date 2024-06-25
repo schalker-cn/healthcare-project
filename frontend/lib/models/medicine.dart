@@ -6,6 +6,7 @@ class Medicine {
   String producerId;
   String currentOwner;
   List<String> previousOwners;
+  double amount;
 
   Medicine({
     required this.medicineId,
@@ -15,5 +16,6 @@ class Medicine {
     required this.producerId,
     required this.currentOwner,
     required this.previousOwners,
+    required this.amount,
   });
 }

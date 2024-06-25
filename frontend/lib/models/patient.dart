@@ -1,9 +1,11 @@
+import 'package:frontend/constants.dart';
+
 class Patient {
   String patientId;
   String hospitalId;
   String name;
-  DateTime dateOfBirth;
-  String gender; //!
+  String dateOfBirth;
+  Gender gender; //!
   String email;
   String phone;
   List<String> doctors = [];

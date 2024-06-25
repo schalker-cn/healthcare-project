@@ -75,8 +75,8 @@ public final class Patient {
     }
 
     public Patient(@JsonProperty("patientID") String patientID, @JsonProperty("hospitalID") String hospitalID, @JsonProperty("name") String name, int age, @JsonProperty("gender") String gender, @JsonProperty("email") String email, @JsonProperty("phone") String phone, @JsonProperty("accessToDoctors") List accessToDoctors) {
-        this.patientID = "patient" + patientID;
-        this.hospitalID = "hospital" + hospitalID;
+        this.patientID = patientID;
+        this.hospitalID = hospitalID;
         this.name = name;
         this.age = age;
         this.gender = gender;

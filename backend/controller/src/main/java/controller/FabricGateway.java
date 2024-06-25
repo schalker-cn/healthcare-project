@@ -34,7 +34,7 @@ public class FabricGateway {
     private static final String CHAINCODE_NAME = System.getenv().getOrDefault("CHAINCODE_NAME", "basic");
 
     // Path to crypto materials.
-    private static final Path CRYPTO_PATH = Paths.get("../../network-settings/test-network/organizations/peerOrganizations/org1.example.com");
+    private static final Path CRYPTO_PATH = Paths.get("backend", "network-settings", "test-network", "organizations", "peerOrganizations", "org1.example.com");
     // Path to user certificate.
     private static final Path CERT_DIR_PATH = CRYPTO_PATH.resolve(Paths.get("users/User1@org1.example.com/msp/signcerts"));
     // Path to user private key directory.
@@ -127,4 +127,10 @@ public class FabricGateway {
     public Contract doctorContract(Network network) {
         return network.getContract("DoctorContract");
     }
+
+    @Bean(name = "producerContract")
+    public Contract producerContract(Network network) {return network.getContract("ProducerContract");}
+
+    @Bean(name = "hospitalContract")
+    public Contract hospitalContract(Network network) {return network.getContract("HospitalContract");}
 }

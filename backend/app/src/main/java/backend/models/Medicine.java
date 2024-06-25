@@ -50,7 +50,7 @@ public final class Medicine {
         return expirationDate;
     }
 
-    public Object getCurrentOwner() {
+    public String getCurrentOwner() {
         return currentOwner;
     }
 

@@ -88,15 +88,16 @@ public class FabricGateway {
 
         var builder = Gateway.newInstance().identity(newIdentity()).signer(newSigner()).connection(channel)
                 // Default timeouts for different gRPC calls
-                .evaluateOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS))
-                .endorseOptions(options -> options.withDeadlineAfter(15, TimeUnit.SECONDS))
-                .submitOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS))
-                .commitStatusOptions(options -> options.withDeadlineAfter(1, TimeUnit.MINUTES));
+                .evaluateOptions(options -> options.withDeadlineAfter(5, TimeUnit.MINUTES))
+                .endorseOptions(options -> options.withDeadlineAfter(15, TimeUnit.MINUTES))
+                .submitOptions(options -> options.withDeadlineAfter(5, TimeUnit.MINUTES))
+                .commitStatusOptions(options -> options.withDeadlineAfter(5, TimeUnit.MINUTES));
 
         try (var gateway = builder.connect()) {
             return gateway;
         } finally {
-            channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+            // channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+
         }
     }
 
@@ -105,34 +106,8 @@ public class FabricGateway {
         return gateway.getNetwork("mychannel");
     }
 
-    @Bean(name = "patientContract")
-    public Contract patientContract(Network network) {
-        return network.getContract("PatientContract");
+    @Bean
+    public Contract contract(Network network) {
+        return network.getContract("basic");
     }
-
-    @Bean(name = "prescriptionContract")
-    public Contract prescriptionContract(Network network) {
-        return network.getContract("PrescriptionContract");
-    }
-
-    @Bean(name = "medicineContract")
-    public Contract medicineContract(Network network) {
-        return network.getContract("MedicineContract");
-    }
-
-    @Bean(name = "healthRecordContract")
-    public Contract healthRecordContract(Network network) {
-        return network.getContract("HealthRecordContract");
-    }
-
-    @Bean(name = "doctorContract")
-    public Contract doctorContract(Network network) {
-        return network.getContract("DoctorContract");
-    }
-
-    @Bean(name = "producerContract")
-    public Contract producerContract(Network network) {return network.getContract("ProducerContract");}
-
-    @Bean(name = "hospitalContract")
-    public Contract hospitalContract(Network network) {return network.getContract("HospitalContract");}
 }

@@ -84,7 +84,7 @@ public final class HealthRecordContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public HealthRecord updateHealthRecord(final Context ctx, final String recordID, final String date, final String patientID, final String doctorID, final String symptom, final String diagnosis, final String treatment, final String prescriptionID) {
+    public HealthRecord UpdateHealthRecord(final Context ctx, final String recordID, final String date, final String patientID, final String doctorID, final String symptom, final String diagnosis, final String treatment, final String prescriptionID) {
         ChaincodeStub stub = ctx.getStub();
 
         if(!RecordExists(ctx, recordID)) {

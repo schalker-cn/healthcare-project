@@ -1,47 +1,44 @@
 package controller;
-import backend.models.*;
+import java.nio.charset.StandardCharsets;
+
+import org.hyperledger.fabric.client.CommitException;
+import org.hyperledger.fabric.client.CommitStatusException;
+import org.hyperledger.fabric.client.Contract;
+import org.hyperledger.fabric.client.EndorseException;
+import org.hyperledger.fabric.client.GatewayException;
+import org.hyperledger.fabric.client.SubmitException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
-import org.hyperledger.fabric.client.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.nio.charset.StandardCharsets;
+import backend.models.Doctor;
+import backend.models.HealthRecord;
+import backend.models.Hospital;
+import backend.models.Medicine;
+import backend.models.Patient;
+import backend.models.Prescription;
+import backend.models.Producer;
 
 @RestController
 @RequestMapping("/api")
 public class FabricController {
-    @Autowired
-    @Qualifier("patientContract")
-    private Contract patientContract;
 
     @Autowired
-    @Qualifier("prescriptionContract")
-    private Contract prescriptionContract;
+    private Contract contract;
 
-    @Autowired
-    @Qualifier("medicineContract")
-    private Contract medicineContract;
-
-    @Autowired
-    @Qualifier("healthRecordContract")
-    private Contract healthRecordContract;
-
-    @Autowired
-    @Qualifier("doctorContract")
-    private Contract doctorContract;
-
-    @Autowired
-    @Qualifier("producerContract")
-    private Contract producerContract;
-
-    @Autowired
-    @Qualifier("hospitalContract")
-    private Contract hospitalContract;
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -61,10 +58,13 @@ public class FabricController {
      *
      * <li>HTTP endpoints of Patient class</li>
      */
-    @PostMapping("/createPatient/{patientId}")
-    public ResponseEntity<String> createPatient(@PathVariable String patientId, @RequestBody Patient patient) {
+    @PostMapping("/createPatient/{patientID}")
+    public ResponseEntity<String> createPatient(@PathVariable String patientID, @RequestBody Patient patient) {
         try {
-            byte[] result = patientContract.submitTransaction("CreatePatient", patientId, patient.getHospitalID(), patient.getName(), String.valueOf(patient.getAge()), patient.getGender(), patient.getEmail(), patient.getPhone(), patient.getAccessToDoctors().toString());
+            ObjectMapper objectMapper = new ObjectMapper();
+            String accessToDoctorsJson = objectMapper.writeValueAsString(patient.getAccessToDoctors());
+            
+            byte[] result = contract.submitTransaction("PatientContract:CreatePatient", patientID, patient.getHospitalID(), patient.getName(), String.valueOf(patient.getAge()), patient.getGender(), patient.getEmail(), patient.getPhone(), accessToDoctorsJson);
             return new ResponseEntity<>(prettyJson(result), HttpStatus.CREATED);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -73,12 +73,12 @@ public class FabricController {
         }
     }
 
-    @GetMapping("/readPatient/{patientId}")
-    public ResponseEntity<String> readPatientById(@PathVariable String patientId) {
+    @GetMapping("/readPatient/{patientID}")
+    public ResponseEntity<String> readPatientById(@PathVariable String patientID) {
         try {
             System.out.println("\n--> Evaluate Transaction: ReadPatient, function returns patient attributes");
 
-            byte[] evaluateResult = patientContract.evaluateTransaction("ReadPatient", patientId);
+            byte[] evaluateResult = contract.evaluateTransaction("PatientContract:ReadPatient", patientID);
 
             String resultJSON = prettyJson(evaluateResult);
             System.out.println("*** Result:" + resultJSON);
@@ -91,10 +91,10 @@ public class FabricController {
     }
 
     // TODO: check how to handle accessToDoctors list
-    @PutMapping("/updatePatient/{patientId}")
-    public ResponseEntity<String> updatePatient(@PathVariable String patientId, @RequestBody Patient patient) {
+    @PutMapping("/updatePatient/{patientID}")
+    public ResponseEntity<String> updatePatient(@PathVariable String patientID, @RequestBody Patient patient) {
         try {
-            byte[] result = patientContract.submitTransaction("UpdatePatient", patientId, patient.getHospitalID(), patient.getName(), String.valueOf(patient.getAge()), patient.getGender(), patient.getEmail(), patient.getPhone(), patient.getAccessToDoctors().toString());
+            byte[] result = contract.submitTransaction("PatientContract:UpdatePatient", patientID, patient.getHospitalID(), patient.getName(), String.valueOf(patient.getAge()), patient.getGender(), patient.getEmail(), patient.getPhone(), patient.getAccessToDoctors().toString());
             return new ResponseEntity<>(prettyJson(result), HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -103,10 +103,10 @@ public class FabricController {
         }
     }
 
-    @DeleteMapping("/deletePatient/{patientId}")
-    public ResponseEntity<String> deletePatient(@PathVariable String patientId) {
+    @DeleteMapping("/deletePatient/{patientID}")
+    public ResponseEntity<String> deletePatient(@PathVariable String patientID) {
         try {
-            patientContract.submitTransaction("DeletePatient", patientId);
+            contract.submitTransaction("PatientContract:DeletePatient", patientID);
             return new ResponseEntity<>("Patient deleted successfully", HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -120,7 +120,7 @@ public class FabricController {
         try {
             System.out.println("\n--> Evaluate Transaction: GetAllPatients, function returns all patient attributes");
 
-            byte[] evaluateResult = patientContract.evaluateTransaction("GetAllPatients");
+            byte[] evaluateResult = contract.evaluateTransaction("PatientContract:GetAllPatients");
 
             String resultJSON = prettyJson(evaluateResult);
             System.out.println("*** Result:" + resultJSON);
@@ -136,10 +136,10 @@ public class FabricController {
      *
      * <li>HTTP endpoints of Prescription class</li>
      */
-    @PostMapping("/createPrescription/{prescriptionId}")
-    public ResponseEntity<String> createPrescription(@PathVariable String prescriptionId, @RequestBody Prescription prescription) {
+    @PostMapping("/createPrescription/{prescriptionID}")
+    public ResponseEntity<String> createPrescription(@PathVariable String prescriptionID, @RequestBody Prescription prescription) {
         try {
-            byte[] result = prescriptionContract.submitTransaction("CreatePrescription", prescriptionId, prescription.getMedicineID(), String.valueOf(prescription.getDosage()), String.valueOf(prescription.getDuration()));
+            byte[] result = contract.submitTransaction("PrescriptionContract:CreatePrescription", prescriptionID, prescription.getMedicineID(), String.valueOf(prescription.getDosage()), String.valueOf(prescription.getDuration()));
             return new ResponseEntity<>(prettyJson(result), HttpStatus.CREATED);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -148,12 +148,12 @@ public class FabricController {
         }
     }
 
-    @GetMapping("/readPrescription/{prescriptionId}")
-    public ResponseEntity<String> readPrescriptionById(@PathVariable String prescriptionId) {
+    @GetMapping("/readPrescription/{prescriptionID}")
+    public ResponseEntity<String> readPrescriptionById(@PathVariable String prescriptionID) {
         try {
             System.out.println("\n--> Evaluate Transaction: ReadPrescription, function returns prescription attributes");
 
-            byte[] evaluateResult = prescriptionContract.evaluateTransaction("ReadPrescription", prescriptionId);
+            byte[] evaluateResult = contract.evaluateTransaction("PrescriptionContract:ReadPrescription", prescriptionID);
 
             String resultJSON = prettyJson(evaluateResult);
             System.out.println("*** Result:" + resultJSON);
@@ -165,10 +165,10 @@ public class FabricController {
         }
     }
 
-    @PutMapping("/updatePrescription/{prescriptionId}")
-    public ResponseEntity<String> updatePrescription(@PathVariable String prescriptionId, @RequestBody Prescription prescription) {
+    @PutMapping("/updatePrescription/{prescriptionID}")
+    public ResponseEntity<String> updatePrescription(@PathVariable String prescriptionID, @RequestBody Prescription prescription) {
         try {
-            byte[] result = prescriptionContract.submitTransaction("UpdatePrescription", prescriptionId, prescription.getMedicineID(), String.valueOf(prescription.getDosage()), String.valueOf(prescription.getDuration()));
+            byte[] result = contract.submitTransaction("PrescriptionContract:UpdatePrescription", prescriptionID, prescription.getMedicineID(), String.valueOf(prescription.getDosage()), String.valueOf(prescription.getDuration()));
             return new ResponseEntity<>(prettyJson(result), HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -177,10 +177,10 @@ public class FabricController {
         }
     }
 
-    @DeleteMapping("/deletePrescription/{prescriptionId}")
-    public ResponseEntity<String> deletePrescription(@PathVariable String prescriptionId) {
+    @DeleteMapping("/deletePrescription/{prescriptionID}")
+    public ResponseEntity<String> deletePrescription(@PathVariable String prescriptionID) {
         try {
-            prescriptionContract.submitTransaction("DeletePrescription", prescriptionId);
+            contract.submitTransaction("PrescriptionContract:DeletePrescription", prescriptionID);
             return new ResponseEntity<>("Prescription deleted successfully", HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -194,7 +194,7 @@ public class FabricController {
         try {
             System.out.println("\n--> Evaluate Transaction: GetAllPrescriptions, function returns all prescription attributes");
 
-            byte[] evaluateResult = prescriptionContract.evaluateTransaction("GetAllPrescriptions");
+            byte[] evaluateResult = contract.evaluateTransaction("PrescriptionContract:GetAllPrescriptions");
 
             String resultJSON = prettyJson(evaluateResult);
             System.out.println("*** Result:" + resultJSON);
@@ -210,10 +210,10 @@ public class FabricController {
      *
      * <li>HTTP endpoints of Medicine class</li>
      */
-    @PostMapping("/createMedicine/{medicineId}")
-    public ResponseEntity<String> createMedicine(@PathVariable String medicineId, @RequestBody Medicine medicine) {
+    @PostMapping("/createMedicine/{medicineID}")
+    public ResponseEntity<String> createMedicine(@PathVariable String medicineID, @RequestBody Medicine medicine) {
         try {
-            byte[] result = medicineContract.submitTransaction("CreateMedicine", medicineId, medicine.getProducerID(), medicine.getName(), medicine.getProductionDate(), medicine.getExpirationDate(), medicine.getCurrentOwner(), medicine.getPreviousOwners());
+            byte[] result = contract.submitTransaction("MedicineContract:CreateMedicine", medicineID, medicine.getProducerID(), medicine.getName(), medicine.getProductionDate(), medicine.getExpirationDate(), medicine.getCurrentOwner(), medicine.getPreviousOwners());
             return new ResponseEntity<>(prettyJson(result), HttpStatus.CREATED);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -222,12 +222,12 @@ public class FabricController {
         }
     }
 
-    @GetMapping("/readMedicine/{medicineId}")
-    public ResponseEntity<String> readMedicineById(@PathVariable String medicineId) {
+    @GetMapping("/readMedicine/{medicineID}")
+    public ResponseEntity<String> readMedicineById(@PathVariable String medicineID) {
         try {
             System.out.println("\n--> Evaluate Transaction: ReadMedicine, function returns medicine attributes");
 
-            byte[] evaluateResult = medicineContract.evaluateTransaction("ReadMedicine", medicineId);
+            byte[] evaluateResult = contract.evaluateTransaction("MedicineContract:ReadMedicine", medicineID);
 
             String resultJSON = prettyJson(evaluateResult);
             System.out.println("*** Result:" + resultJSON);
@@ -239,10 +239,10 @@ public class FabricController {
         }
     }
 
-    @PutMapping("/updateMedicine/{medicineId}")
-    public ResponseEntity<String> updateMedicine(@PathVariable String medicineId, @RequestBody Medicine medicine) {
+    @PutMapping("/updateMedicine/{medicineID}")
+    public ResponseEntity<String> updateMedicine(@PathVariable String medicineID, @RequestBody Medicine medicine) {
         try {
-            byte[] result = medicineContract.submitTransaction("UpdateMedicine", medicineId, medicine.getProducerID(), medicine.getName(), medicine.getProductionDate(), medicine.getExpirationDate(), medicine.getCurrentOwner(), medicine.getPreviousOwners());
+            byte[] result = contract.submitTransaction("MedicineContract:UpdateMedicine", medicineID, medicine.getProducerID(), medicine.getName(), medicine.getProductionDate(), medicine.getExpirationDate(), medicine.getCurrentOwner(), medicine.getPreviousOwners());
             return new ResponseEntity<>(prettyJson(result), HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -251,10 +251,10 @@ public class FabricController {
         }
     }
 
-    @DeleteMapping("/deleteMedicine/{medicineId}")
-    public ResponseEntity<String> deleteMedicine(@PathVariable String medicineId) {
+    @DeleteMapping("/deleteMedicine/{medicineID}")
+    public ResponseEntity<String> deleteMedicine(@PathVariable String medicineID) {
         try {
-            medicineContract.submitTransaction("DeleteMedicine", medicineId);
+            contract.submitTransaction("MedicineContract:DeleteMedicine", medicineID);
             return new ResponseEntity<>("Medicine deleted successfully", HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -268,7 +268,7 @@ public class FabricController {
         try {
             System.out.println("\n--> Evaluate Transaction: GetAllMedicines, function returns all medicine attributes");
 
-            byte[] evaluateResult = medicineContract.evaluateTransaction("GetAllMedicines");
+            byte[] evaluateResult = contract.evaluateTransaction("MedicineContract:GetAllMedicines");
 
             String resultJSON = prettyJson(evaluateResult);
             System.out.println("*** Result:" + resultJSON);
@@ -285,10 +285,10 @@ public class FabricController {
      * <li>HTTP endpoints of HealthRecord class</li>
      */
 
-    @PostMapping("/createHealthRecord/{recordId}")
-    public ResponseEntity<String> createHealthRecord(@PathVariable String recordId, @RequestBody HealthRecord healthRecord) {
+    @PostMapping("/createHealthRecord/{recordID}")
+    public ResponseEntity<String> createHealthRecord(@PathVariable String recordID, @RequestBody HealthRecord healthRecord) {
         try {
-            byte[] result = healthRecordContract.submitTransaction("CreateHealthRecord", recordId, healthRecord.getDate(), healthRecord.getPatientID(), healthRecord.getDoctorID(), healthRecord.getSymptom(), healthRecord.getDiagnosis(), healthRecord.getTreatment(), healthRecord.getPrescriptionID());
+            byte[] result = contract.submitTransaction("CreateHealthRecord", recordID, healthRecord.getDate(), healthRecord.getPatientID(), healthRecord.getDoctorID(), healthRecord.getSymptom(), healthRecord.getDiagnosis(), healthRecord.getTreatment(), healthRecord.getPrescriptionID());
             return new ResponseEntity<>(prettyJson(result), HttpStatus.CREATED);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -297,10 +297,10 @@ public class FabricController {
         }
     }
 
-    @GetMapping("/readHealthRecord/{recordId}")
-    public ResponseEntity<String> readHealthRecordById(@PathVariable String recordId) {
+    @GetMapping("/readHealthRecord/{recordID}")
+    public ResponseEntity<String> readHealthRecordById(@PathVariable String recordID) {
         try {
-            byte[] evaluateResult = healthRecordContract.evaluateTransaction("ReadHealthRecord", recordId);
+            byte[] evaluateResult = contract.evaluateTransaction("ReadHealthRecord", recordID);
             String resultJSON = prettyJson(evaluateResult);
             return new ResponseEntity<>(resultJSON, HttpStatus.OK);
         } catch (GatewayException e) {
@@ -310,10 +310,10 @@ public class FabricController {
         }
     }
 
-    @PutMapping("/updateHealthRecord/{recordId}")
-    public ResponseEntity<String> updateHealthRecord(@PathVariable String recordId, @RequestBody HealthRecord healthRecord) {
+    @PutMapping("/updateHealthRecord/{recordID}")
+    public ResponseEntity<String> updateHealthRecord(@PathVariable String recordID, @RequestBody HealthRecord healthRecord) {
         try {
-            byte[] result = healthRecordContract.submitTransaction("UpdateHealthRecord", recordId, healthRecord.getDate(), healthRecord.getPatientID(), healthRecord.getDoctorID(), healthRecord.getSymptom(), healthRecord.getDiagnosis(), healthRecord.getTreatment(), healthRecord.getPrescriptionID());
+            byte[] result = contract.submitTransaction("UpdateHealthRecord", recordID, healthRecord.getDate(), healthRecord.getPatientID(), healthRecord.getDoctorID(), healthRecord.getSymptom(), healthRecord.getDiagnosis(), healthRecord.getTreatment(), healthRecord.getPrescriptionID());
             return new ResponseEntity<>(prettyJson(result), HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -322,10 +322,10 @@ public class FabricController {
         }
     }
 
-    @DeleteMapping("/deleteHealthRecord/{recordId}")
-    public ResponseEntity<String> deleteHealthRecord(@PathVariable String recordId) {
+    @DeleteMapping("/deleteHealthRecord/{recordID}")
+    public ResponseEntity<String> deleteHealthRecord(@PathVariable String recordID) {
         try {
-            healthRecordContract.submitTransaction("DeleteHealthRecord", recordId);
+            contract.submitTransaction("DeleteHealthRecord", recordID);
             return new ResponseEntity<>("Health record deleted successfully", HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -337,7 +337,7 @@ public class FabricController {
     @GetMapping("/getAllHealthRecords")
     public ResponseEntity<String> getAllHealthRecords() {
         try {
-            byte[] evaluateResult = healthRecordContract.evaluateTransaction("GetAllRecords");
+            byte[] evaluateResult = contract.evaluateTransaction("GetAllRecords");
             String resultJSON = prettyJson(evaluateResult);
             return new ResponseEntity<>(resultJSON, HttpStatus.OK);
         } catch (GatewayException e) {
@@ -352,10 +352,10 @@ public class FabricController {
      * <li>HTTP endpoints of Doctor class</li>
      */
 
-    @PostMapping("/createDoctor/{doctorId}")
-    public ResponseEntity<String> createDoctor(@PathVariable String doctorId, @RequestBody Doctor doctor) {
+    @PostMapping("/createDoctor/{doctorID}")
+    public ResponseEntity<String> createDoctor(@PathVariable String doctorID, @RequestBody Doctor doctor) {
         try {
-            byte[] result = doctorContract.submitTransaction("CreateDoctor", doctorId, doctor.getName(), String.valueOf(doctor.getAge()), doctor.getGender(), doctor.getAddress(), doctor.getEmail(), doctor.getPhone(), doctor.getHospitalID(), doctor.getSpeciality());
+            byte[] result = contract.submitTransaction("DoctorContract:CreateDoctor", doctorID, doctor.getName(), String.valueOf(doctor.getAge()), doctor.getGender(), doctor.getAddress(), doctor.getEmail(), doctor.getPhone(), doctor.getHospitalID(), doctor.getSpeciality());
             return new ResponseEntity<>(prettyJson(result), HttpStatus.CREATED);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -364,10 +364,10 @@ public class FabricController {
         }
     }
 
-    @GetMapping("/readDoctor/{doctorId}")
-    public ResponseEntity<String> readDoctorById(@PathVariable String doctorId) {
+    @GetMapping("/readDoctor/{doctorID}")
+    public ResponseEntity<String> readDoctorById(@PathVariable String doctorID) {
         try {
-            byte[] evaluateResult = doctorContract.evaluateTransaction("ReadDoctor", doctorId);
+            byte[] evaluateResult = contract.evaluateTransaction("DoctorContract:ReadDoctor", doctorID);
             String resultJSON = prettyJson(evaluateResult);
             return new ResponseEntity<>(resultJSON, HttpStatus.OK);
         } catch (GatewayException e) {
@@ -377,10 +377,10 @@ public class FabricController {
         }
     }
 
-    @PutMapping("/updateDoctor/{doctorId}")
-    public ResponseEntity<String> updateDoctor(@PathVariable String doctorId, @RequestBody Doctor doctor) {
+    @PutMapping("/updateDoctor/{doctorID}")
+    public ResponseEntity<String> updateDoctor(@PathVariable String doctorID, @RequestBody Doctor doctor) {
         try {
-            byte[] result = doctorContract.submitTransaction("UpdateDoctor", doctorId, doctor.getName(), String.valueOf(doctor.getAge()), doctor.getGender(), doctor.getAddress(), doctor.getEmail(), doctor.getPhone(), doctor.getHospitalID(), doctor.getSpeciality());
+            byte[] result = contract.submitTransaction("DoctorContract:UpdateDoctor", doctorID, doctor.getName(), String.valueOf(doctor.getAge()), doctor.getGender(), doctor.getAddress(), doctor.getEmail(), doctor.getPhone(), doctor.getHospitalID(), doctor.getSpeciality());
             return new ResponseEntity<>(prettyJson(result), HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -389,10 +389,10 @@ public class FabricController {
         }
     }
 
-    @DeleteMapping("/deleteDoctor/{doctorId}")
-    public ResponseEntity<String> deleteDoctor(@PathVariable String doctorId) {
+    @DeleteMapping("/deleteDoctor/{doctorID}")
+    public ResponseEntity<String> deleteDoctor(@PathVariable String doctorID) {
         try {
-            doctorContract.submitTransaction("DeleteDoctor", doctorId);
+            contract.submitTransaction("DoctorContract:DeleteDoctor", doctorID);
             return new ResponseEntity<>("Doctor deleted successfully", HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -404,7 +404,7 @@ public class FabricController {
     @GetMapping("/getAllDoctors")
     public ResponseEntity<String> getAllDoctors() {
         try {
-            byte[] evaluateResult = doctorContract.evaluateTransaction("GetAllDoctors");
+            byte[] evaluateResult = contract.evaluateTransaction("DoctorContract:GetAllDoctors");
             String resultJSON = prettyJson(evaluateResult);
             return new ResponseEntity<>(resultJSON, HttpStatus.OK);
         } catch (GatewayException e) {
@@ -419,10 +419,10 @@ public class FabricController {
      * <li>HTTP endpoints of Producer class</li>
      */
 
-    @PostMapping("/createProducer/{producerId}")
-    public ResponseEntity<String> createProducer(@PathVariable String producerId, @RequestBody Producer producer) {
+    @PostMapping("/createProducer/{producerID}")
+    public ResponseEntity<String> createProducer(@PathVariable String producerID, @RequestBody Producer producer) {
         try {
-            byte[] result = producerContract.submitTransaction("CreateProducer", producerId, producer.getName(), producer.getAddress());
+            byte[] result = contract.submitTransaction("ProducerContract:CreateProducer", producerID, producer.getName(), producer.getAddress());
             return new ResponseEntity<>(prettyJson(result), HttpStatus.CREATED);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -431,10 +431,10 @@ public class FabricController {
         }
     }
 
-    @GetMapping("/readProducer/{producerId}")
-    public ResponseEntity<String> readProducerById(@PathVariable String producerId) {
+    @GetMapping("/readProducer/{producerID}")
+    public ResponseEntity<String> readProducerById(@PathVariable String producerID) {
         try {
-            byte[] evaluateResult = producerContract.evaluateTransaction("ReadProducer", producerId);
+            byte[] evaluateResult = contract.evaluateTransaction("ProducerContract:ReadProducer", producerID);
             String resultJSON = prettyJson(evaluateResult);
             return new ResponseEntity<>(resultJSON, HttpStatus.OK);
         } catch (GatewayException e) {
@@ -444,10 +444,10 @@ public class FabricController {
         }
     }
 
-    @PutMapping("/updateProducer/{producerId}")
-    public ResponseEntity<String> updateProducer(@PathVariable String producerId, @RequestBody Producer producer) {
+    @PutMapping("/updateProducer/{producerID}")
+    public ResponseEntity<String> updateProducer(@PathVariable String producerID, @RequestBody Producer producer) {
         try {
-            byte[] result = producerContract.submitTransaction("UpdateProducer", producerId, producer.getName(), producer.getAddress());
+            byte[] result = contract.submitTransaction("ProducerContract:UpdateProducer", producerID, producer.getName(), producer.getAddress());
             return new ResponseEntity<>(prettyJson(result), HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -456,10 +456,10 @@ public class FabricController {
         }
     }
 
-    @DeleteMapping("/deleteProducer/{producerId}")
-    public ResponseEntity<String> deleteProducer(@PathVariable String producerId) {
+    @DeleteMapping("/deleteProducer/{producerID}")
+    public ResponseEntity<String> deleteProducer(@PathVariable String producerID) {
         try {
-            producerContract.submitTransaction("DeleteProducer", producerId);
+            contract.submitTransaction("ProducerContract:DeleteProducer", producerID);
             return new ResponseEntity<>("Producer deleted successfully", HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -471,7 +471,7 @@ public class FabricController {
     @GetMapping("/getAllProducers")
     public ResponseEntity<String> getAllProducers() {
         try {
-            byte[] evaluateResult = producerContract.evaluateTransaction("GetAllProducers");
+            byte[] evaluateResult = contract.evaluateTransaction("ProducerContract:GetAllProducers");
             String resultJSON = prettyJson(evaluateResult);
             return new ResponseEntity<>(resultJSON, HttpStatus.OK);
         } catch (GatewayException e) {
@@ -485,10 +485,10 @@ public class FabricController {
      *
      * <li>HTTP endpoints of Hospital class</li>
      */
-    @PostMapping("/createHospital/{hospitalId}")
-    public ResponseEntity<String> createHospital(@PathVariable String hospitalId, @RequestBody Hospital hospital) {
+    @PostMapping("/createHospital/{hospitalID}")
+    public ResponseEntity<String> createHospital(@PathVariable String hospitalID, @RequestBody Hospital hospital) {
         try {
-            byte[] result = hospitalContract.submitTransaction("CreateHospital", hospitalId, hospital.getName(), hospital.getAddress(), hospital.getPhone(), hospital.getEmail());
+            byte[] result = contract.submitTransaction("HospitalContract:CreateHospital", hospitalID, hospital.getName(), hospital.getAddress(), hospital.getPhone(), hospital.getEmail());
             return new ResponseEntity<>(prettyJson(result), HttpStatus.CREATED);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -497,10 +497,10 @@ public class FabricController {
         }
     }
 
-    @GetMapping("/readHospital/{hospitalId}")
-    public ResponseEntity<String> readHospitalById(@PathVariable String hospitalId) {
+    @GetMapping("/readHospital/{hospitalID}")
+    public ResponseEntity<String> readHospitalById(@PathVariable String hospitalID) {
         try {
-            byte[] evaluateResult = hospitalContract.evaluateTransaction("ReadHospital", hospitalId);
+            byte[] evaluateResult = contract.evaluateTransaction("HospitalContract:ReadHospital", hospitalID);
             String resultJSON = prettyJson(evaluateResult);
             return new ResponseEntity<>(resultJSON, HttpStatus.OK);
         } catch (GatewayException e) {
@@ -510,10 +510,10 @@ public class FabricController {
         }
     }
 
-    @PutMapping("/updateHospital/{hospitalId}")
-    public ResponseEntity<String> updateHospital(@PathVariable String hospitalId, @RequestBody Hospital hospital) {
+    @PutMapping("/updateHospital/{hospitalID}")
+    public ResponseEntity<String> updateHospital(@PathVariable String hospitalID, @RequestBody Hospital hospital) {
         try {
-            byte[] result = hospitalContract.submitTransaction("UpdateHospital", hospitalId, hospital.getName(), hospital.getAddress(), hospital.getPhone(), hospital.getEmail());
+            byte[] result = contract.submitTransaction("HospitalContract:UpdateHospital", hospitalID, hospital.getName(), hospital.getAddress(), hospital.getPhone(), hospital.getEmail());
             return new ResponseEntity<>(prettyJson(result), HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -522,10 +522,10 @@ public class FabricController {
         }
     }
 
-    @DeleteMapping("/deleteHospital/{hospitalId}")
-    public ResponseEntity<String> deleteHospital(@PathVariable String hospitalId) {
+    @DeleteMapping("/deleteHospital/{hospitalID}")
+    public ResponseEntity<String> deleteHospital(@PathVariable String hospitalID) {
         try {
-            hospitalContract.submitTransaction("DeleteHospital", hospitalId);
+            contract.submitTransaction("HospitalContract:DeleteHospital", hospitalID);
             return new ResponseEntity<>("Hospital deleted successfully", HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -537,7 +537,7 @@ public class FabricController {
     @GetMapping("/getAllHospitals")
     public ResponseEntity<String> getAllHospitals() {
         try {
-            byte[] evaluateResult = hospitalContract.evaluateTransaction("GetAllHospitals");
+            byte[] evaluateResult = contract.evaluateTransaction("HospitalContract:GetAllHospitals");
             String resultJSON = prettyJson(evaluateResult);
             return new ResponseEntity<>(resultJSON, HttpStatus.OK);
         } catch (GatewayException e) {

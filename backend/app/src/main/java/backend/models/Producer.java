@@ -1,10 +1,12 @@
 package backend.models;
 
-import com.owlike.genson.annotation.JsonProperty;
+import java.util.Objects;
+
 import org.hyperledger.fabric.contract.annotation.DataType;
 import org.hyperledger.fabric.contract.annotation.Property;
 
-import java.util.Objects;
+import com.owlike.genson.annotation.JsonCreator;
+import com.owlike.genson.annotation.JsonProperty;
 
 @DataType()
 public final class Producer {
@@ -30,6 +32,13 @@ public final class Producer {
         return address;
     }
 
+    public Producer() {
+        this.producerID = "mock";
+        this.name = "mock";
+        this.address = "mock";
+    }
+
+    @JsonCreator
     public Producer(@JsonProperty("producerID") String producerID, @JsonProperty("name") String name, @JsonProperty("address") String address) {
         this.producerID = producerID;
         this.name = name;

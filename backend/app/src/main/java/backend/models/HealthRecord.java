@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.hyperledger.fabric.contract.annotation.DataType;
 import org.hyperledger.fabric.contract.annotation.Property;
 
+import com.owlike.genson.annotation.JsonCreator;
 import com.owlike.genson.annotation.JsonProperty;
 
 @DataType()
@@ -66,6 +67,18 @@ public final class HealthRecord {
         return prescriptionID;
     }
 
+    public HealthRecord() {
+        this.recordID = "mock";
+        this.date = "mock";
+        this.patientID = "mock";
+        this.doctorID = "mock";
+        this.symptom = "mock";
+        this.diagnosis = "mock";
+        this.treatment = "mock";
+        this.prescriptionID = "mock";
+    }
+
+    @JsonCreator
     public HealthRecord(@JsonProperty("recordID") String recordID, @JsonProperty("date") String date, @JsonProperty("patientID") String patientID, @JsonProperty("doctorID") String doctorID, @JsonProperty("symptom") String symptom, @JsonProperty("diagnosis") String diagnosis, @JsonProperty("treatment") String treatment, @JsonProperty("prescriptionID") String prescriptionID) {
         this.recordID = recordID;
         this.date = date;

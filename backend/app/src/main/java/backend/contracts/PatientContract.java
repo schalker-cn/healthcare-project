@@ -50,7 +50,7 @@ public final class PatientContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public Patient CreatePatient(final Context ctx, final String patientID, final String hospitalID, final String name, final int age, final String gender, final String email, final String phone, final List accessToDoctors) {
+    public Patient CreatePatient(final Context ctx, final String patientID, final String hospitalID, final String name, final int age, final String gender, final String email, final String phone, final String accessToDoctors) {
         ChaincodeStub stub = ctx.getStub();
 
         if (PatientExists(ctx, patientID)) {
@@ -59,7 +59,9 @@ public final class PatientContract implements ContractInterface {
             throw new ChaincodeException(errorMessage, PatientErrors.PATIENT_ALREADY_EXISTS.toString());
         }
 
-        Patient patient = new Patient(patientID, hospitalID, name, age, gender, email, phone, accessToDoctors);
+        List<String> accessToDoctorsList = genson.deserialize(accessToDoctors, List.class);
+
+        Patient patient = new Patient(patientID, hospitalID, name, age, gender, email, phone, accessToDoctorsList);
         String patientJSON = genson.serialize(patient);
         stub.putStringState(patientID, patientJSON);
         return patient;
@@ -81,7 +83,7 @@ public final class PatientContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public Patient updatePatient(final Context ctx, final String patientID, final String hospitalID, final String name, final int age, final String gender, final String email, final String phone, final List accessToDoctors) {
+    public Patient UpdatePatient(final Context ctx, final String patientID, final String hospitalID, final String name, final int age, final String gender, final String email, final String phone, final List accessToDoctors) {
         ChaincodeStub stub = ctx.getStub();
 
         if(!PatientExists(ctx, patientID)) {

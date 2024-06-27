@@ -8,6 +8,7 @@
 ### Lifecycle of the contract
 
 1. package chaincode:
+
     - CLI command:
 
     ```
@@ -18,6 +19,8 @@
 
 1. install chaincode:
     - CLI command:
+
+
     ```
       peer lifecycle chaincode install basic.tar.gz
     ```
@@ -25,6 +28,7 @@
     - make sure the chaincode is installed on all orgs. Switch between orgs by modifying org environment variables in ~/.bashrc file. Also remember to apply the change with command **source ~/.bashrc**
 
 2. approve chaincode:
+
     - run
       
     ```
@@ -45,6 +49,7 @@
     ```
 
 4. commit chaincode:
+
     - CLI command:
     
     ```
@@ -52,6 +57,7 @@
     ```
 
 5. invoke chaincode (from default contract):
+
     - CLI command to invoke InitLedger function:
     
     ```
@@ -72,7 +78,9 @@
     ```
 
     ## attention: 
+
     - the commands above only works on methods of the default contract(i.e. HelahRecord). If you want to call methods from other contracts, make sure to follow the format like contractName:methodName.
+
     - example: 
         - run InitLedger function of Prescription contract:
         

@@ -83,7 +83,7 @@ public final class ProducerContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public Producer updateProducer(final Context ctx, final String producerID, final String name, final String address) {
+    public Producer UpdateProducer(final Context ctx, final String producerID, final String name, final String address) {
         ChaincodeStub stub = ctx.getStub();
 
         if(!ProducerExists(ctx, producerID)) {

@@ -81,7 +81,7 @@ public final class DoctorContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public Doctor updateDoctor(final Context ctx, final String doctorID, final String name, final int age, final String gender, final String address, final String email, final String phone, final String hospitalID, final String speciality) {
+    public Doctor UpdateDoctor(final Context ctx, final String doctorID, final String name, final int age, final String gender, final String address, final String email, final String phone, final String hospitalID, final String speciality) {
         ChaincodeStub stub = ctx.getStub();
 
         if(!DoctorExists(ctx, doctorID)) {

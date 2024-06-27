@@ -81,7 +81,7 @@ public final class PrescriptionContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public Prescription updatePrescription(final Context ctx,  final String prescriptionID, final String medicineID, final int dosage, final int duration) {
+    public Prescription UpdatePrescription(final Context ctx,  final String prescriptionID, final String medicineID, final int dosage, final int duration) {
         ChaincodeStub stub = ctx.getStub();
 
         if(!PrescriptionExists(ctx, prescriptionID)) {

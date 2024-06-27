@@ -82,7 +82,7 @@ public final class HospitalContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public Hospital updateHospital(final Context ctx, final String hospitalID, final String name, final String address, final String phone, final String email) {
+    public Hospital UpdateHospital(final Context ctx, final String hospitalID, final String name, final String address, final String phone, final String email) {
         ChaincodeStub stub = ctx.getStub();
 
         if(!HospitalExists(ctx, hospitalID)) {

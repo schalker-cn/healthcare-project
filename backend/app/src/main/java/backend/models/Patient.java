@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.hyperledger.fabric.contract.annotation.DataType;
 import org.hyperledger.fabric.contract.annotation.Property;
 
+import com.owlike.genson.annotation.JsonCreator;
 import com.owlike.genson.annotation.JsonProperty;
 
 @DataType()
@@ -32,7 +33,7 @@ public final class Patient {
     private final String phone;
 
     @Property()
-    private final List accessToDoctors;
+    private final List<String> accessToDoctors;
 
     public String getPatientID() {
         return patientID;
@@ -74,7 +75,20 @@ public final class Patient {
         return age == patient.age && Objects.equals(name, patient.name) && Objects.equals(gender, patient.gender) && Objects.equals(email, patient.email) && Objects.equals(phone, patient.phone) && Objects.equals(accessToDoctors, patient.accessToDoctors);
     }
 
-    public Patient(@JsonProperty("patientID") String patientID, @JsonProperty("hospitalID") String hospitalID, @JsonProperty("name") String name, int age, @JsonProperty("gender") String gender, @JsonProperty("email") String email, @JsonProperty("phone") String phone, @JsonProperty("accessToDoctors") List accessToDoctors) {
+    public Patient() {
+        // mock constructor, will not be used
+        this.patientID = "mock";
+        this.hospitalID = "mock";
+        this.name = "mock";
+        this.age = 0;
+        this.gender = "mock";
+        this.email = "mock";
+        this.phone = "mock";
+        this.accessToDoctors = List.of();
+    }
+
+    @JsonCreator
+    public Patient(@JsonProperty("patientID") String patientID, @JsonProperty("hospitalID") String hospitalID, @JsonProperty("name") String name, int age, @JsonProperty("gender") String gender, @JsonProperty("email") String email, @JsonProperty("phone") String phone, @JsonProperty("accessToDoctors") List<String> accessToDoctors) {
         this.patientID = patientID;
         this.hospitalID = hospitalID;
         this.name = name;

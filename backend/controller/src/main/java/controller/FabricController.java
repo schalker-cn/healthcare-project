@@ -52,7 +52,6 @@ public class FabricController {
         return gson.toJson(parsedJson);
     }
 
-    // TODO: check parameter type of submitTransaction()
 
     /**
      *
@@ -61,6 +60,7 @@ public class FabricController {
     @PostMapping("/createPatient/{patientID}")
     public ResponseEntity<String> createPatient(@PathVariable String patientID, @RequestBody Patient patient) {
         try {
+            // manually convert accessToDoctors list to json object
             ObjectMapper objectMapper = new ObjectMapper();
             String accessToDoctorsJson = objectMapper.writeValueAsString(patient.getAccessToDoctors());
             
@@ -90,11 +90,13 @@ public class FabricController {
         }
     }
 
-    // TODO: check how to handle accessToDoctors list
     @PutMapping("/updatePatient/{patientID}")
     public ResponseEntity<String> updatePatient(@PathVariable String patientID, @RequestBody Patient patient) {
         try {
-            byte[] result = contract.submitTransaction("PatientContract:UpdatePatient", patientID, patient.getHospitalID(), patient.getName(), String.valueOf(patient.getAge()), patient.getGender(), patient.getEmail(), patient.getPhone(), patient.getAccessToDoctors().toString());
+            ObjectMapper objectMapper = new ObjectMapper();
+            String accessToDoctorsJson = objectMapper.writeValueAsString(patient.getAccessToDoctors());
+
+            byte[] result = contract.submitTransaction("PatientContract:UpdatePatient", patientID, patient.getHospitalID(), patient.getName(), String.valueOf(patient.getAge()), patient.getGender(), patient.getEmail(), patient.getPhone(), accessToDoctorsJson);
             return new ResponseEntity<>(prettyJson(result), HttpStatus.OK);
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -115,6 +117,8 @@ public class FabricController {
         }
     }
 
+
+    //TODO: handle reading accessToDoctors, always return mock value
     @GetMapping("/getAllPatients")
     public ResponseEntity<String> getAllPatients() {
         try {

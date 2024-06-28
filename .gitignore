@@ -10,6 +10,7 @@
 /backend/app/.vscode/
 /backend/.vscode/
 /.vscode/
+/frontend/dummy_api/venv/
 
 # Ignore IntelliJ IDEA
 /backend/app/.idea
@@ -35,3 +36,6 @@
 
 #ignore java build file
 /backend/app/bin/
+**/dummy_api/
+/frontend/dummy_api/
+

@@ -25,7 +25,7 @@
       peer lifecycle chaincode install basic.tar.gz
     ```
     
-    - make sure the chaincode is installed on all orgs. Switch between orgs by modifying org environment variables in ~/.bashrc file. Also remember to apply the change with command **source ~/.bashrc**
+    - make sure the chaincode is installed on all peers. Switch between orgs by modifying org environment variables in ~/.bashrc file. Also remember to apply the change with command **source ~/.bashrc**
 
 2. approve chaincode:
 

@@ -34,6 +34,10 @@
 /backend/network/*.tar.gz
 /backend/network/log.txt
 
+#Ignore build file
+/backend/controller/build
+/backend/gateway/build
+
 #ignore java build file
 /backend/app/bin/
 **/dummy_api/

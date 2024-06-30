@@ -16,6 +16,7 @@ import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 
 import com.owlike.genson.Genson;
 
+import backend.CheckIdPrefix;
 import backend.models.Patient;
 
 @Contract(
@@ -51,29 +52,30 @@ public final class PatientContract implements ContractInterface {
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public Patient CreatePatient(final Context ctx, final String patientID, final String hospitalID, final String name, final int age, final String gender, final String email, final String phone, final String accessToDoctors) {
+        String patientIdCopy = CheckIdPrefix.checkAndAddPrefix(patientID, "patient_");
+        String hospitalIdCopy = CheckIdPrefix.checkAndAddPrefix(hospitalID, "hospital_");
         ChaincodeStub stub = ctx.getStub();
-
-        if (PatientExists(ctx, patientID)) {
-            String errorMessage = String.format("patient %s already exists", patientID);
+    
+        if (PatientExists(ctx, patientIdCopy)) {
+            String errorMessage = String.format("patient %s already exists", patientIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, PatientErrors.PATIENT_ALREADY_EXISTS.toString());
         }
-
-        List<String> accessToDoctorsList = genson.deserialize(accessToDoctors, List.class);
-
-        Patient patient = new Patient(patientID, hospitalID, name, age, gender, email, phone, accessToDoctorsList);
+    
+        Patient patient = new Patient(patientIdCopy, hospitalIdCopy, name, age, gender, email, phone, accessToDoctors);
         String patientJSON = genson.serialize(patient);
-        stub.putStringState(patientID, patientJSON);
+        stub.putStringState(patientIdCopy, patientJSON);
         return patient;
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
     public Patient ReadPatient(final Context ctx, final String patientID) {
+        String patientIdCopy = CheckIdPrefix.checkAndAddPrefix(patientID, "patient_");
         ChaincodeStub stub = ctx.getStub();
-        String patientJSON = stub.getStringState(patientID);
+        String patientJSON = stub.getStringState(patientIdCopy);
 
         if (patientJSON == null || patientJSON.isEmpty()) {
-            String errorMessage = String.format("patient %s does not exist", patientID);
+            String errorMessage = String.format("patient %s does not exist", patientIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, PatientErrors.PATIENT_NOT_FOUND.toString());
         }
@@ -83,39 +85,42 @@ public final class PatientContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public Patient UpdatePatient(final Context ctx, final String patientID, final String hospitalID, final String name, final int age, final String gender, final String email, final String phone, final List accessToDoctors) {
+    public Patient UpdatePatient(final Context ctx, final String patientID, final String hospitalID, final String name, final int age, final String gender, final String email, final String phone, final String accessToDoctors) {
+        String patientIdCopy = CheckIdPrefix.checkAndAddPrefix(patientID, "patient_");
+        String hospitalIdCopy = CheckIdPrefix.checkAndAddPrefix(hospitalID, "hospital_");
         ChaincodeStub stub = ctx.getStub();
 
-        if(!PatientExists(ctx, patientID)) {
-            String errorMessage = String.format("patient %s does not exist", patientID);
+        if (!PatientExists(ctx, patientIdCopy)) {
+            String errorMessage = String.format("patient %s does not exist", patientIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, PatientErrors.PATIENT_NOT_FOUND.toString());
         }
 
-        Patient newPatient = new Patient(patientID, hospitalID, name, age, gender, email, phone, accessToDoctors);
+        Patient newPatient = new Patient(patientIdCopy, hospitalIdCopy, name, age, gender, email, phone, accessToDoctors);
         String patientJSON = genson.serialize(newPatient);
-        stub.putStringState(patientID, patientJSON);
+        stub.putStringState(patientIdCopy, patientJSON);
         return newPatient;
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public void DeletePatient(final Context ctx, final String patientID) {
+        String patientIdCopy = CheckIdPrefix.checkAndAddPrefix(patientID, "patient_");
         ChaincodeStub stub = ctx.getStub();
 
-        if(!PatientExists(ctx, patientID)) {
-            String errorMessage = String.format("patient %s does not exist", patientID);
+        if(!PatientExists(ctx, patientIdCopy)) {
+            String errorMessage = String.format("patient %s does not exist", patientIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, PatientErrors.PATIENT_NOT_FOUND.toString());
         }
 
-        stub.delState(patientID);
+        stub.delState(patientIdCopy);
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
     public String GetAllPatients(final Context ctx) {
         ChaincodeStub stub = ctx.getStub();
         List<Patient> queryResults = new ArrayList<Patient>();
-        QueryResultsIterator<KeyValue> results = stub.getStateByRange("", "");
+        QueryResultsIterator<KeyValue> results = stub.getStateByRange("patient_", "patient_\uFFFF");
         for (KeyValue result: results) {
             Patient patient = genson.deserialize(result.getStringValue(), Patient.class);
             queryResults.add(patient);
@@ -126,4 +131,3 @@ public final class PatientContract implements ContractInterface {
 
     }
 }
-

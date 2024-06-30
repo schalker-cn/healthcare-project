@@ -16,6 +16,7 @@ import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 
 import com.owlike.genson.Genson;
 
+import backend.CheckIdPrefix;
 import backend.models.HealthRecord;
 import backend.models.Prescription;
 
@@ -54,27 +55,32 @@ public final class HealthRecordContract implements ContractInterface {
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public HealthRecord CreateHealthRecord(final Context ctx, final String recordID, final String date, final String patientID, final String doctorID, final String symptom, final String diagnosis, final String treatment, final String prescriptionID) {
+        String recordIdCopy = CheckIdPrefix.checkAndAddPrefix(recordID, "record_");
+        String patientIdCopy = CheckIdPrefix.checkAndAddPrefix(patientID, "patient_");
+        String doctorIdCopy = CheckIdPrefix.checkAndAddPrefix(doctorID, "doctor_");
+        String prescriptionIdCopy = CheckIdPrefix.checkAndAddPrefix(prescriptionID, "prescription_");
         ChaincodeStub stub = ctx.getStub();
 
-        if (RecordExists(ctx, recordID)) {
-            String errorMessage = String.format("Health record %s of patient %s already exists", recordID, patientID);
+        if (RecordExists(ctx, recordIdCopy)) {
+            String errorMessage = String.format("Health record %s of patient %s already exists", recordIdCopy, patientIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, HealthRecordErrors.RECORD_ALREADY_EXISTS.toString());
         }
 
-        HealthRecord record = new HealthRecord(recordID, date, patientID, doctorID, symptom, diagnosis, treatment, prescriptionID);
+        HealthRecord record = new HealthRecord(recordIdCopy, date, patientIdCopy, doctorIdCopy, symptom, diagnosis, treatment, prescriptionIdCopy);
         String recordJSON = genson.serialize(record);
-        stub.putStringState(recordID, recordJSON);
+        stub.putStringState(recordIdCopy, recordJSON);
         return record;
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
     public HealthRecord ReadHealthRecord(final Context ctx, final String recordID) {
+        String recordIdCopy = CheckIdPrefix.checkAndAddPrefix(recordID, "record_");
         ChaincodeStub stub = ctx.getStub();
-        String recordJSON = stub.getStringState(recordID);
+        String recordJSON = stub.getStringState(recordIdCopy);
 
         if (recordJSON == null || recordJSON.isEmpty()) {
-            String errorMessage = String.format("Health record %s does not exist", recordID);
+            String errorMessage = String.format("Health record %s does not exist", recordIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, HealthRecordErrors.RECORD_NOT_FOUND.toString());
         }
@@ -85,38 +91,43 @@ public final class HealthRecordContract implements ContractInterface {
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public HealthRecord UpdateHealthRecord(final Context ctx, final String recordID, final String date, final String patientID, final String doctorID, final String symptom, final String diagnosis, final String treatment, final String prescriptionID) {
+        String recordIdCopy = CheckIdPrefix.checkAndAddPrefix(recordID, "record_");
+        String patientIdCopy = CheckIdPrefix.checkAndAddPrefix(patientID, "patient_");
+        String doctorIdCopy = CheckIdPrefix.checkAndAddPrefix(doctorID, "doctor_");
+        String prescriptionIdCopy = CheckIdPrefix.checkAndAddPrefix(prescriptionID, "prescription_");
         ChaincodeStub stub = ctx.getStub();
 
-        if(!RecordExists(ctx, recordID)) {
-            String errorMessage = String.format("Health record %s does not exist", recordID);
+        if(!RecordExists(ctx, recordIdCopy)) {
+            String errorMessage = String.format("Health record %s does not exist", recordIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, HealthRecordErrors.RECORD_NOT_FOUND.toString());
         }
 
-        HealthRecord newRecord = new HealthRecord(recordID, date, patientID, doctorID, symptom, diagnosis, treatment, prescriptionID);
+        HealthRecord newRecord = new HealthRecord(recordIdCopy, date, patientIdCopy, doctorIdCopy, symptom, diagnosis, treatment, prescriptionIdCopy);
         String recordJSON = genson.serialize(newRecord);
-        stub.putStringState(recordID, recordJSON);
+        stub.putStringState(recordIdCopy, recordJSON);
         return newRecord;
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public void DeleteHealthRecord(final Context ctx, final String recordID) {
+        String recordIdCopy = CheckIdPrefix.checkAndAddPrefix(recordID, "record_");
         ChaincodeStub stub = ctx.getStub();
 
-        if(!RecordExists(ctx, recordID)) {
-            String errorMessage = String.format("Health record %s does not exist", recordID);
+        if(!RecordExists(ctx, recordIdCopy)) {
+            String errorMessage = String.format("Health record %s does not exist", recordIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, HealthRecordErrors.RECORD_NOT_FOUND.toString());
         }
 
-        stub.delState(recordID);
+        stub.delState(recordIdCopy);
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
     public String GetAllRecords(final Context ctx) {
         ChaincodeStub stub = ctx.getStub();
         List<HealthRecord> queryResults = new ArrayList<HealthRecord>();
-        QueryResultsIterator<KeyValue> results = stub.getStateByRange("", "");
+        QueryResultsIterator<KeyValue> results = stub.getStateByRange("record_", "record_\uFFFF");
         for (KeyValue result: results) {
             HealthRecord record = genson.deserialize(result.getStringValue(), HealthRecord.class);
             queryResults.add(record);

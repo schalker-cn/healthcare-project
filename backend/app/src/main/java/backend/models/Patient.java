@@ -1,6 +1,5 @@
 package backend.models;
 
-import java.util.List;
 import java.util.Objects;
 
 import org.hyperledger.fabric.contract.annotation.DataType;
@@ -33,7 +32,7 @@ public final class Patient {
     private final String phone;
 
     @Property()
-    private final List<String> accessToDoctors;
+    private final String accessToDoctors;
 
     public String getPatientID() {
         return patientID;
@@ -63,7 +62,7 @@ public final class Patient {
         return phone;
     }
 
-    public List getAccessToDoctors() {
+    public String getAccessToDoctors() {
         return accessToDoctors;
     }
 
@@ -84,11 +83,11 @@ public final class Patient {
         this.gender = "mock";
         this.email = "mock";
         this.phone = "mock";
-        this.accessToDoctors = List.of();
+        this.accessToDoctors = "mock";
     }
 
     @JsonCreator
-    public Patient(@JsonProperty("patientID") String patientID, @JsonProperty("hospitalID") String hospitalID, @JsonProperty("name") String name, int age, @JsonProperty("gender") String gender, @JsonProperty("email") String email, @JsonProperty("phone") String phone, @JsonProperty("accessToDoctors") List<String> accessToDoctors) {
+    public Patient(@JsonProperty("patientID") String patientID, @JsonProperty("hospitalID") String hospitalID, @JsonProperty("name") String name, int age, @JsonProperty("gender") String gender, @JsonProperty("email") String email, @JsonProperty("phone") String phone, @JsonProperty("accessToDoctors") String accessToDoctors) {
         this.patientID = patientID;
         this.hospitalID = hospitalID;
         this.name = name;

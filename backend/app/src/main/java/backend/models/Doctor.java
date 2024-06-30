@@ -80,7 +80,7 @@ public final class Doctor {
         this.age = 0;
         this.gender = "mock";
         this.address = "mock";
-        this.email = "mock@example.com";
+        this.email = "mock";
         this.phone = "mock";
         this.hospitalID = "mock";
         this.speciality = "mock";

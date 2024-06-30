@@ -16,6 +16,7 @@ import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 
 import com.owlike.genson.Genson;
 
+import backend.CheckIdPrefix;
 import backend.models.Hospital;
 
 
@@ -52,27 +53,29 @@ public final class HospitalContract implements ContractInterface {
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public Hospital CreateHospital(final Context ctx, final String hospitalID, final String name, final String address, final String phone, final String email) {
+        String hospitalIdCopy = CheckIdPrefix.checkAndAddPrefix(hospitalID, "hospital_");
         ChaincodeStub stub = ctx.getStub();
 
-        if (HospitalExists(ctx, hospitalID)) {
-            String errorMessage = String.format("hospital %s already exists", hospitalID);
+        if (HospitalExists(ctx, hospitalIdCopy)) {
+            String errorMessage = String.format("hospital %s already exists", hospitalIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, HospitalErrors.HOSPITAL_ALREADY_EXISTS.toString());
         }
 
-        Hospital hospital = new Hospital(hospitalID, name, address, phone, email);
+        Hospital hospital = new Hospital(hospitalIdCopy, name, address, phone, email);
         String hospitalJSON = genson.serialize(hospital);
-        stub.putStringState(hospitalID, hospitalJSON);
+        stub.putStringState(hospitalIdCopy, hospitalJSON);
         return hospital;
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
     public Hospital ReadHospital(final Context ctx, final String hospitalID) {
+        String hospitalIdCopy = CheckIdPrefix.checkAndAddPrefix(hospitalID, "hospital_");
         ChaincodeStub stub = ctx.getStub();
-        String hospitalJSON = stub.getStringState(hospitalID);
+        String hospitalJSON = stub.getStringState(hospitalIdCopy);
 
         if (hospitalJSON == null || hospitalJSON.isEmpty()) {
-            String errorMessage = String.format("hospital %s does not exist", hospitalID);
+            String errorMessage = String.format("hospital %s does not exist", hospitalIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, HospitalErrors.HOSPITAL_NOT_FOUND.toString());
         }
@@ -83,38 +86,40 @@ public final class HospitalContract implements ContractInterface {
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public Hospital UpdateHospital(final Context ctx, final String hospitalID, final String name, final String address, final String phone, final String email) {
+        String hospitalIdCopy = CheckIdPrefix.checkAndAddPrefix(hospitalID, "hospital_");
         ChaincodeStub stub = ctx.getStub();
 
-        if(!HospitalExists(ctx, hospitalID)) {
-            String errorMessage = String.format("hospital %s does not exist", hospitalID);
+        if(!HospitalExists(ctx, hospitalIdCopy)) {
+            String errorMessage = String.format("hospital %s does not exist", hospitalIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, HospitalErrors.HOSPITAL_NOT_FOUND.toString());
         }
 
-        Hospital newHospital = new Hospital(hospitalID, name, address, phone, email);
+        Hospital newHospital = new Hospital(hospitalIdCopy, name, address, phone, email);
         String hospitalJSON = genson.serialize(newHospital);
-        stub.putStringState(hospitalID, hospitalJSON);
+        stub.putStringState(hospitalIdCopy, hospitalJSON);
         return newHospital;
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public void DeleteHospital(final Context ctx, final String hospitalID) {
+        String hospitalIdCopy = CheckIdPrefix.checkAndAddPrefix(hospitalID, "hospital_");
         ChaincodeStub stub = ctx.getStub();
 
-        if(!HospitalExists(ctx, hospitalID)) {
-            String errorMessage = String.format("hospital %s does not exist", hospitalID);
+        if(!HospitalExists(ctx, hospitalIdCopy)) {
+            String errorMessage = String.format("hospital %s does not exist", hospitalIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, HospitalErrors.HOSPITAL_NOT_FOUND.toString());
         }
 
-        stub.delState(hospitalID);
+        stub.delState(hospitalIdCopy);
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
     public String GetAllHospitals(final Context ctx) {
         ChaincodeStub stub = ctx.getStub();
         List<Hospital> queryResults = new ArrayList<Hospital>();
-        QueryResultsIterator<KeyValue> results = stub.getStateByRange("", "");
+        QueryResultsIterator<KeyValue> results = stub.getStateByRange("hospital_", "hospital_\uFFFF");
         for (KeyValue result: results) {
             Hospital hospital = genson.deserialize(result.getStringValue(), Hospital.class);
             queryResults.add(hospital);

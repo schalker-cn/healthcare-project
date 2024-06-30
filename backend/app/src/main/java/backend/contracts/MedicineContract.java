@@ -15,6 +15,7 @@ import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 
 import com.owlike.genson.Genson;
 
+import backend.CheckIdPrefix;
 import backend.models.Medicine;
 
 @Contract(
@@ -50,27 +51,30 @@ public final class MedicineContract implements ContractInterface {
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public Medicine CreateMedicine(final Context ctx, final String medicineID, final String producerID, final String name, final String productionDate, final String expirationDate, final String currentOwner, final String previousOwners) {
+        String medicineIdCopy = CheckIdPrefix.checkAndAddPrefix(medicineID, "medicine_");
+        String producerIdCopy = CheckIdPrefix.checkAndAddPrefix(producerID, "producer_");
         ChaincodeStub stub = ctx.getStub();
 
-        if (MedicineExists(ctx, medicineID)) {
+        if (MedicineExists(ctx, medicineIdCopy)) {
             String errorMessage = String.format("Medicine %s is already created", name);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, MedicineRecordErrors.MEDICINE_ALREADY_EXISTS.toString());
         }
 
-        Medicine medicine = new Medicine(medicineID, producerID, name, productionDate, expirationDate, currentOwner, previousOwners);
+        Medicine medicine = new Medicine(medicineIdCopy, producerIdCopy, name, productionDate, expirationDate, currentOwner, previousOwners);
         String recordJSON = genson.serialize(medicine);
-        stub.putStringState(medicineID, recordJSON);
+        stub.putStringState(medicineIdCopy, recordJSON);
         return medicine;
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
     public Medicine ReadMedicine(final Context ctx, final String medicineID) {
+        String medicineIdCopy = CheckIdPrefix.checkAndAddPrefix(medicineID, "medicine_");
         ChaincodeStub stub = ctx.getStub();
-        String medicineJSON = stub.getStringState(medicineID);
+        String medicineJSON = stub.getStringState(medicineIdCopy);
 
         if (medicineJSON == null || medicineJSON.isEmpty()) {
-            String errorMessage = String.format("Medicine record %s does not exist", medicineID);
+            String errorMessage = String.format("Medicine record %s does not exist", medicineIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, MedicineRecordErrors.MEDICINE_NOT_FOUND.toString());
         }
@@ -81,38 +85,41 @@ public final class MedicineContract implements ContractInterface {
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public Medicine UpdateMedicine(final Context ctx, final String medicineID, final String producerID, final String name, final String productionDate, final String expirationDate, final String currentOwner, final String previousOwners) {
+        String medicineIdCopy = CheckIdPrefix.checkAndAddPrefix(medicineID, "medicine_");
+        String producerIdCopy = CheckIdPrefix.checkAndAddPrefix(producerID, "producer_");
         ChaincodeStub stub = ctx.getStub();
 
-        if (!MedicineExists(ctx, medicineID)) {
-            String errorMessage = String.format("Medicine record %s does not exist", medicineID);
+        if (!MedicineExists(ctx, medicineIdCopy)) {
+            String errorMessage = String.format("Medicine record %s does not exist", medicineIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, MedicineRecordErrors.MEDICINE_NOT_FOUND.toString());
         }
 
-        Medicine newMedicine = new Medicine(medicineID, producerID, name, productionDate, expirationDate, currentOwner, previousOwners);
+        Medicine newMedicine = new Medicine(medicineIdCopy, producerIdCopy, name, productionDate, expirationDate, currentOwner, previousOwners);
         String medicineJSON = genson.serialize(newMedicine);
-        stub.putStringState(medicineID, medicineJSON);
+        stub.putStringState(medicineIdCopy, medicineJSON);
         return newMedicine;
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public void DeleteMedicine(final Context ctx, final String medicineID) {
+        String medicineIdCopy = CheckIdPrefix.checkAndAddPrefix(medicineID, "medicine_");
         ChaincodeStub stub = ctx.getStub();
 
-        if (!MedicineExists(ctx, medicineID)) {
-            String errorMessage = String.format("Medicine record %s does not exist", medicineID);
+        if (!MedicineExists(ctx, medicineIdCopy)) {
+            String errorMessage = String.format("Medicine record %s does not exist", medicineIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, MedicineRecordErrors.MEDICINE_NOT_FOUND.toString());
         }
 
-        stub.delState(medicineID);
+        stub.delState(medicineIdCopy);
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
     public String GetAllMedicines(final Context ctx) {
         ChaincodeStub stub = ctx.getStub();
         List<Medicine> queryResults = new ArrayList<>();
-        QueryResultsIterator<KeyValue> results = stub.getStateByRange("", "");
+        QueryResultsIterator<KeyValue> results = stub.getStateByRange("medicine_", "medicine_\uFFFF");
         for (KeyValue result : results) {
             Medicine medicine = genson.deserialize(result.getStringValue(), Medicine.class);
             queryResults.add(medicine);

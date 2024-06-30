@@ -16,6 +16,7 @@ import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 
 import com.owlike.genson.Genson;
 
+import backend.CheckIdPrefix;
 import backend.models.Doctor;
 
 @Contract(
@@ -50,28 +51,31 @@ public final class DoctorContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
-    public Doctor CreateDoctor(final Context ctx, final String doctorID, final String name, final int age, final String gender, final String address, final String email, final String phone, final String hospitalID, final String speciality) {
+    public Doctor CreateDoctor(final Context ctx, final String doctorID, final String name, final int age, final String gender, final String address, final String email, final String phone, final String hospitalID, final String speciality) { 
+        String doctorIdCopy = CheckIdPrefix.checkAndAddPrefix(doctorID, "doctor_");
+        String hospitalIdCopy = CheckIdPrefix.checkAndAddPrefix(hospitalID, "hospital_");
         ChaincodeStub stub = ctx.getStub();
 
-        if (DoctorExists(ctx, doctorID)) {
-            String errorMessage = String.format("doctor %s already exists", doctorID);
+        if (DoctorExists(ctx, doctorIdCopy)) {
+            String errorMessage = String.format("doctor %s already exists", doctorIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, DoctorErrors.DOCTOR_ALREADY_EXISTS.toString());
         }
 
-        Doctor doctor = new Doctor(doctorID, name, age, gender, address, email, phone, hospitalID, speciality);
+        Doctor doctor = new Doctor(doctorIdCopy, name, age, gender, address, email, phone, hospitalIdCopy, speciality);
         String doctorJSON = genson.serialize(doctor);
-        stub.putStringState(doctorID, doctorJSON);
+        stub.putStringState(doctorIdCopy, doctorJSON);
         return doctor;
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
     public Doctor ReadDoctor(final Context ctx, final String doctorID) {
+        String doctorIdCopy = CheckIdPrefix.checkAndAddPrefix(doctorID, "doctor_");
         ChaincodeStub stub = ctx.getStub();
-        String doctorJSON = stub.getStringState(doctorID);
+        String doctorJSON = stub.getStringState(doctorIdCopy);
 
         if (doctorJSON == null || doctorJSON.isEmpty()) {
-            String errorMessage = String.format("doctor %s does not exist", doctorID);
+            String errorMessage = String.format("doctor %s does not exist", doctorIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, DoctorErrors.DOCTOR_NOT_FOUND.toString());
         }
@@ -82,38 +86,41 @@ public final class DoctorContract implements ContractInterface {
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public Doctor UpdateDoctor(final Context ctx, final String doctorID, final String name, final int age, final String gender, final String address, final String email, final String phone, final String hospitalID, final String speciality) {
+        String doctorIdCopy = CheckIdPrefix.checkAndAddPrefix(doctorID, "doctor_");
+        String hospitalIdCopy = CheckIdPrefix.checkAndAddPrefix(hospitalID, "hospital_");
         ChaincodeStub stub = ctx.getStub();
 
-        if(!DoctorExists(ctx, doctorID)) {
-            String errorMessage = String.format("doctor %s does not exist", doctorID);
+        if(!DoctorExists(ctx, doctorIdCopy)) {
+            String errorMessage = String.format("doctor %s does not exist", doctorIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, DoctorErrors.DOCTOR_NOT_FOUND.toString());
         }
 
-        Doctor newDoctor = new Doctor(doctorID, name, age, gender, address, email, phone, hospitalID, speciality);
+        Doctor newDoctor = new Doctor(doctorIdCopy, name, age, gender, address, email, phone, hospitalIdCopy, speciality);
         String doctorJSON = genson.serialize(newDoctor);
-        stub.putStringState(doctorID, doctorJSON);
+        stub.putStringState(doctorIdCopy, doctorJSON);
         return newDoctor;
     }
 
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public void DeleteDoctor(final Context ctx, final String doctorID) {
+        String doctorIdCopy = CheckIdPrefix.checkAndAddPrefix(doctorID, "doctor_");
         ChaincodeStub stub = ctx.getStub();
 
-        if(!DoctorExists(ctx, doctorID)) {
-            String errorMessage = String.format("doctor %s does not exist", doctorID);
+        if(!DoctorExists(ctx, doctorIdCopy)) {
+            String errorMessage = String.format("doctor %s does not exist", doctorIdCopy);
             System.out.println(errorMessage);
             throw new ChaincodeException(errorMessage, DoctorErrors.DOCTOR_NOT_FOUND.toString());
         }
 
-        stub.delState(doctorID);
+        stub.delState(doctorIdCopy);
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
     public String GetAllDoctors(final Context ctx) {
         ChaincodeStub stub = ctx.getStub();
         List<Doctor> queryResults = new ArrayList<Doctor>();
-        QueryResultsIterator<KeyValue> results = stub.getStateByRange("", "");
+        QueryResultsIterator<KeyValue> results = stub.getStateByRange("doctor_", "doctor_\uFFFF");
         for (KeyValue result: results) {
             Doctor doctor = genson.deserialize(result.getStringValue(), Doctor.class);
             queryResults.add(doctor);

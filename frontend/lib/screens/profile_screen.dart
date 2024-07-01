@@ -29,6 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final emailController = TextEditingController();
   final addressController = TextEditingController();
   final specialityController = TextEditingController();
+  dynamic user;
 
   @override
   void initState() {
@@ -40,38 +41,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void fetchUser() async {
     // fetch user data from the server
     if (widget.userType == UserType.patient) {
-      var url = getLocalhost(unecodedPath: '/getPatient/${widget.userId}');
+      var url = getLocalhost(unecodedPath: 'api/readPatient/${widget.userId}');
       var response = await http.get(url);
       dynamic result = jsonDecode(response.body);
+      setState(() {
+        user = result;
+      });
       nameController.text = result['name'];
-      dobController.text = result['dob'];
+      dobController.text = result['age'].toString();
       phoneController.text = result['phone'];
       emailController.text = result['email'];
     } else if (widget.userType == UserType.hospital) {
-      var url = getLocalhost(unecodedPath: '/getHospital/${widget.userId}');
+      var url = getLocalhost(unecodedPath: 'api/readHospital/${widget.userId}');
       var response = await http.get(url);
       dynamic result = jsonDecode(response.body);
+      setState(() {
+        user = result;
+      });
       nameController.text = result['name'];
       addressController.text = result['address'];
       phoneController.text = result['phone'];
       emailController.text = result['email'];
     } else if (widget.userType == UserType.doctor) {
-      var url = getLocalhost(unecodedPath: '/getDoctor/${widget.userId}');
+      var url = getLocalhost(unecodedPath: 'api/readDoctor/${widget.userId}');
       var response = await http.get(url);
       dynamic result = jsonDecode(response.body);
+      print(response.body);
+      setState(() {
+        user = result;
+      });
       nameController.text = result['name'];
-      dobController.text = result['dob'];
+      dobController.text = result['age'].toString();
       specialityController.text = result['speciality'];
       phoneController.text = result['phone'];
       emailController.text = result['email'];
     } else if (widget.userType == UserType.producer) {
-      var url = getLocalhost(unecodedPath: '/getProducer/${widget.userId}');
+      var url = getLocalhost(unecodedPath: 'api/readProducer/${widget.userId}');
       var response = await http.get(url);
       dynamic result = jsonDecode(response.body);
+      setState(() {
+        user = result;
+      });
       nameController.text = result['name'];
       addressController.text = result['address'];
-      phoneController.text = result['phone'];
-      emailController.text = result['email'];
+      // phoneController.text = result['phone'];
+      // emailController.text = result['email'];
+    }
+  }
+
+  void saveButtonHandler() async {
+    if (widget.userType == UserType.patient) {
+      var url =
+          getLocalhost(unecodedPath: 'api/updatePatient/${widget.userId}');
+      user['name'] = nameController.text;
+      user['age'] = int.parse(dobController.text);
+      user['phone'] = phoneController.text;
+      user['email'] = emailController.text;
+
+      var response = await http.put(url, body: user);
+      dynamic result = jsonDecode(response.body);
+      print(result);
+    } else if (widget.userType == UserType.doctor) {
+      var url = getLocalhost(unecodedPath: 'api/updateDoctor/${widget.userId}');
+      user['name'] = nameController.text;
+      user['age'] = int.parse(dobController.text);
+      user['speciality'] = specialityController.text;
+      user['phone'] = phoneController.text;
+      user['email'] = emailController.text;
+      var response = await http.put(url, body: user);
+      dynamic result = jsonDecode(response.body);
+      print(result);
+    } else if (widget.userType == UserType.hospital) {
+      var url =
+          getLocalhost(unecodedPath: 'api/updateHospital/${widget.userId}');
+      user['name'] = nameController.text;
+      user['address'] = addressController.text;
+      user['phone'] = phoneController.text;
+      user['email'] = emailController.text;
+      var response = await http.put(url, body: user);
+      dynamic result = jsonDecode(response.body);
+      print(result);
+    } else if (widget.userType == UserType.producer) {
+      var url =
+          getLocalhost(unecodedPath: 'api/updateProducer/${widget.userId}');
+      user['name'] = nameController.text;
+      user['address'] = addressController.text;
+      // user['phone'] = phoneController.text;
+      // user['email'] = emailController.text;
+      var response = await http.put(url, body: user);
+      dynamic result = jsonDecode(response.body);
+      print(result);
     }
   }
 
@@ -80,7 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return SizedBox(
       width: size.width * 0.6,
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: saveButtonHandler,
         child: Text(
           'Save',
           style: TextStyle(
@@ -137,7 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Spacer(),
       textField("Name", nameController),
       SizedBox(height: 32),
-      textField("Date of Birth", dobController),
+      textField("Age", dobController),
       SizedBox(height: 32),
       textField("Phone No", phoneController),
       SizedBox(height: 32),
@@ -177,7 +236,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   textField("Name", nameController),
                   SizedBox(height: 32),
-                  textField("Date of Birth", dobController),
+                  textField("Age", dobController),
                   SizedBox(height: 32),
                   textField("Speciality", specialityController),
                 ],
@@ -210,10 +269,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       textField("Name", nameController),
       SizedBox(height: 32),
       textField("Address", addressController),
-      SizedBox(height: 32),
-      textField("Phone No", phoneController),
-      SizedBox(height: 32),
-      textField("Email", emailController),
+      // SizedBox(height: 32),
+      // textField("Phone No", phoneController),
+      // SizedBox(height: 32),
+      // textField("Email", emailController),
       Spacer(),
       saveButton(),
       Spacer(),

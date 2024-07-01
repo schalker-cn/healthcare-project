@@ -12,28 +12,47 @@ class UserTypeCards extends StatefulWidget {
 
 class _UserTypeCardsState extends State<UserTypeCards> {
   int index = 0;
+  String textFieldLabel = 'Patient ID';
+  String textFieldValue = 'patient_1';
+  TextEditingController textEditingController =
+      TextEditingController(text: 'patient_1');
   List<Map<String, dynamic>> userTypes = [
     {
       'index': 0,
       'name': 'patient',
       'icon': Symbols.coronavirus,
+      'textFieldLabel': 'Patient ID',
+      'textFieldValue': 'patient_1'
     },
     {
       'index': 1,
       'name': 'doctor',
       'icon': Symbols.stethoscope,
+      'textFieldLabel': 'Doctor ID',
+      'textFieldValue': 'doctor_1'
     },
     {
       'index': 2,
       'name': 'hospital',
       'icon': Symbols.local_hospital,
+      'textFieldLabel': 'Hospital ID',
+      'textFieldValue': 'hospital_1'
     },
     {
       'index': 3,
       'name': 'producer',
       'icon': Symbols.pill,
+      'textFieldLabel': 'Producer ID',
+      'textFieldValue': 'producer_1'
     }
   ];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // textEditingController.text = textFieldValue;
+  }
 
   List<Widget> getCards() {
     List<Widget> cards = [];
@@ -47,6 +66,9 @@ class _UserTypeCardsState extends State<UserTypeCards> {
             onTap: () {
               setState(() {
                 index = i;
+                textFieldLabel = userTypes[i]['textFieldLabel'];
+                textFieldValue = userTypes[i]['textFieldValue'];
+                textEditingController.text = textFieldValue;
               });
             },
             child: Container(
@@ -88,14 +110,46 @@ class _UserTypeCardsState extends State<UserTypeCards> {
 
   String getUserId() {
     if (userTypes[index]['name'] == 'patient') {
-      return '123';
+      return 'patient_1';
     } else if (userTypes[index]['name'] == 'doctor') {
-      return '456';
+      return 'doctor_1';
     } else if (userTypes[index]['name'] == 'hospital') {
-      return '789';
+      return 'hospital_1';
     } else {
-      return '101';
+      return 'producer_1';
     }
+  }
+
+  Widget textField(String labelText, TextEditingController controller) {
+    final size = MediaQuery.of(context).size;
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(0),
+      borderSide: BorderSide(color: kLightColor),
+    );
+    return SizedBox(
+      width: size.width * 0.6,
+      child: TextField(
+        controller: controller,
+        cursorColor: kLightColor,
+        style: TextStyle(color: kLightColor),
+        decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: TextStyle(color: kLightColor),
+          // hintStyle: TextStyle(color: Colors.grey),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(0),
+            borderSide: BorderSide(color: kPrimaryColor),
+          ),
+          enabledBorder: border,
+          focusedBorder: border,
+          errorBorder: border,
+          focusedErrorBorder: border,
+          // filled: true,
+          // fillColor: Colors.white,
+          // contentPadding: EdgeInsets.all(20),
+        ),
+      ),
+    );
   }
 
   @override
@@ -113,14 +167,28 @@ class _UserTypeCardsState extends State<UserTypeCards> {
         ),
         SizedBox(height: 32),
         ...getCards(),
-        SizedBox(height: 16),
+        SizedBox(height: 32),
+        Container(
+            width: size.width * .25,
+            child: textField(textFieldLabel, textEditingController)
+            // child: TextField(
+            //   controller: textEditingController,
+            //   decoration: InputDecoration(labelText: textFieldLabel),
+            // ),
+            ),
+        // TextField(
+        //   controller: textEditingController,
+        //   decoration: InputDecoration(labelText: textFieldLabel),
+        // ),
+        SizedBox(height: 32),
         Container(
           width: size.width * .25,
           child: ElevatedButton(
             onPressed: () {
               GoRouter.of(context).pushNamed('dashboard', queryParameters: {
                 'userType': userTypes[index]['name'],
-                'userId': getUserId()
+                // 'userId': getUserId()
+                'userId': textEditingController.text
               });
               // context.go(Uri(
               //   path: "/dashboard",

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/models/doctor.dart';
@@ -6,6 +8,7 @@ import 'package:frontend/models/patient.dart';
 import 'package:frontend/widgets/base_card.dart';
 import 'package:frontend/widgets/custom_app_bar.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:http/http.dart' as http;
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -17,12 +20,46 @@ class UsersScreen extends StatefulWidget {
 }
 
 class _UsersScreenState extends State<UsersScreen> {
+  List<dynamic> users = [];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchUsers();
+  }
+
+  void fetchUsers() async {
+    var url = getLocalhost(unecodedPath: 'api/getAllPatients');
+    var response = await http.get(url);
+    dynamic result = jsonDecode(response.body);
+    for (var i = 0; i < result.length; i++) {
+      result[i]['type'] = 'patient';
+    }
+    print(result);
+
+    setState(() {
+      users = result;
+    });
+
+    url = getLocalhost(unecodedPath: 'api/getAllDoctors');
+    response = await http.get(url);
+    result = jsonDecode(response.body);
+    for (var i = 0; i < result.length; i++) {
+      result[i]['type'] = 'doctor';
+    }
+    print(result);
+    setState(() {
+      users = [...users, ...result];
+    });
+  }
+
   List<Widget> getRecords() {
     List<Widget> getRowDetails(user) {
       return [
         Expanded(
           child: Text(
-            user is Patient ? 'Patient' : 'Doctor',
+            user['type'] == 'patient' ? 'Patient' : 'Doctor',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: kDarkColor.withOpacity(.5),
@@ -33,7 +70,7 @@ class _UsersScreenState extends State<UsersScreen> {
         ),
         Expanded(
           child: Text(
-            user.name,
+            user['name'],
             textAlign: TextAlign.center,
             style: TextStyle(
               color: kDarkColor,
@@ -43,7 +80,7 @@ class _UsersScreenState extends State<UsersScreen> {
           ),
         ),
         Text(
-          user.gender.toString().split('.').last[0].toUpperCase(),
+          user['gender'], //.toString().split('.').last[0].toUpperCase(),
           textAlign: TextAlign.center,
           style: TextStyle(
             color: kDarkColor,
@@ -53,7 +90,7 @@ class _UsersScreenState extends State<UsersScreen> {
         ),
         Expanded(
           child: Text(
-            user.email,
+            user['email'],
             textAlign: TextAlign.center,
             style: TextStyle(
               color: kDarkColor,
@@ -64,7 +101,7 @@ class _UsersScreenState extends State<UsersScreen> {
         ),
         Expanded(
           child: Text(
-            user.phone,
+            user['phone'],
             textAlign: TextAlign.center,
             style: TextStyle(
               color: kDarkColor,
@@ -75,7 +112,9 @@ class _UsersScreenState extends State<UsersScreen> {
         ),
         Expanded(
           child: Text(
-            user is Patient ? user.dateOfBirth : user.speciality,
+            user['type'] == 'patient'
+                ? user['age'].toString() + "years old"
+                : user['speciality'],
             textAlign: TextAlign.center,
             style: TextStyle(
               color: kDarkColor,
@@ -87,27 +126,27 @@ class _UsersScreenState extends State<UsersScreen> {
       ];
     }
 
-    List<dynamic> users = [
-      Patient(
-        patientId: '123',
-        hospitalId: '123',
-        name: 'Alice Bob',
-        dateOfBirth: '1993-01-01',
-        gender: Gender.female,
-        email: 'alice@gmail.com',
-        phone: '+4933223134532',
-      ),
-      Doctor(
-          doctorId: '432',
-          name: "Dr. Jane Doe",
-          dateOfBirth: '1994-01-01',
-          gender: Gender.male,
-          email: 'jane@gmail.com',
-          phone: '+4934342313453',
-          address: 'XYZStrasse 6, 82324 Munich',
-          speciality: 'Neurosurgeon',
-          hospitalId: '423'),
-    ];
+    // List<dynamic> users = [
+    //   Patient(
+    //     patientId: '123',
+    //     hospitalId: '123',
+    //     name: 'Alice Bob',
+    //     dateOfBirth: '1993-01-01',
+    //     gender: Gender.female,
+    //     email: 'alice@gmail.com',
+    //     phone: '+4933223134532',
+    //   ),
+    //   Doctor(
+    //       doctorId: '432',
+    //       name: "Dr. Jane Doe",
+    //       dateOfBirth: '1994-01-01',
+    //       gender: Gender.male,
+    //       email: 'jane@gmail.com',
+    //       phone: '+4934342313453',
+    //       address: 'XYZStrasse 6, 82324 Munich',
+    //       speciality: 'Neurosurgeon',
+    //       hospitalId: '423'),
+    // ];
 
     List<Widget> output = [];
 
@@ -153,29 +192,33 @@ class _UsersScreenState extends State<UsersScreen> {
               icon: Symbols.group,
             ),
             SizedBox(height: 64),
-            ...getRecords(),
-            SizedBox(height: 64),
-            Container(
-              width: size.width * .6,
-              child: ElevatedButton(
-                onPressed: () {},
-                child: Text(
-                  "Add new user",
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.white,
-                  ),
+            ElevatedButton(
+              onPressed: () {},
+              child: Text(
+                "Add new user",
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Colors.white,
                 ),
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(kPrimaryColor),
-                  padding: WidgetStateProperty.all(
-                      EdgeInsets.symmetric(vertical: 16, horizontal: 32)),
-                  shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(0),
-                  )),
+              ),
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(kPrimaryColor),
+                padding: WidgetStateProperty.all(
+                    EdgeInsets.symmetric(vertical: 16, horizontal: 32)),
+                shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(0),
+                )),
+              ),
+            ),
+            SizedBox(height: 64),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: getRecords(),
                 ),
               ),
             ),
+            SizedBox(height: 64),
           ],
         ),
       ),

@@ -75,7 +75,7 @@ class HomeScreen extends StatelessWidget {
       NavCard(
         icon: Symbols.pill,
         path: 'medicines',
-        name: 'all\nmedicines',
+        name: 'my\nmedicines',
         queryParameters: {'userType': UserType.hospital.name, 'userId': userId},
       ),
       Spacer(),

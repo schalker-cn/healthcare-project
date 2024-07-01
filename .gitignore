@@ -5,6 +5,11 @@
 # Ignore Gradle build output directory
 /backend/build
 /backend/app/build
+/backend/gateway/build
+/backend/controller/build
+/backend/app/bin
+/backend/gateway/bin
+/backend/controller/bin
 
 # Ignore VS Code
 /backend/app/.vscode/
@@ -38,4 +43,3 @@
 /backend/app/bin/
 **/dummy_api/
 /frontend/dummy_api/
-

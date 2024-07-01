@@ -1,3 +1,25 @@
+### env variables 
+
+export FABRIC_ROOT="/mnt/c/Users/mazen/Programming/TUM/healthcare-project"
+export FABRIC_HOME="/mnt/c/Users/mazen/Programming/TUM/healthcare-project/backend/network-settings/test-network"
+export PATH="$PATH:$BREW_HOME:/usr/local/go/bin:$FABRIC_HOME/../bin:$JAVA_HOME/bin"
+export FABRIC_CFG_PATH="$FABRIC_HOME/../config/"
+export CORE_PEER_TLS_ENABLED=true
+
+# peer0
+export CORE_PEER_LOCALMSPID=Org1MSP
+export CORE_PEER_TLS_ROOTCERT_FILE=${FABRIC_HOME}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+export CORE_PEER_MSPCONFIGPATH=${FABRIC_HOME}/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+export CORE_PEER_ADDRESS=localhost:7051
+export CC_PACKAGE_ID=basic_1.0:ed1f500cbf57b9f00707560e4782646364b913053b0be99c0db7abe09c995995
+
+# peer1
+export CORE_PEER_LOCALMSPID=Org2MSP
+export CORE_PEER_TLS_ROOTCERT_FILE=${FABRIC_HOME}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
+export CORE_PEER_MSPCONFIGPATH=${FABRIC_HOME}/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp
+export CORE_PEER_ADDRESS=localhost:9051
+export CC_PACKAGE_ID=basic_1.0:ed1f500cbf57b9f00707560e4782646364b913053b0be99c0db7abe09c995995
+
 ### Bring up the network
 1. run network and create a channel with necessary certificate file:
 

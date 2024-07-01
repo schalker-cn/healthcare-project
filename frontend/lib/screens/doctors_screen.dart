@@ -36,16 +36,23 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
   }
 
   void fetchDoctors() async {
-    var url = getLocalhost(unecodedPath: 'getDoctors');
+    var url = getLocalhost(unecodedPath: 'api/getAllDoctors');
     var response = await http.get(url);
+    print(response.body);
     dynamic result = jsonDecode(response.body);
+    // dynamic doctors = [];
+    // for (var i = 0; i < result.length; i++) {
+    //   if (result[i]['type'] == 'doctor') {
+    //     doctors.add(result[i]);
+    //   }
+    // }
     setState(() {
       doctors = result;
     });
   }
 
   void fetchPatient() async {
-    var url = getLocalhost(unecodedPath: 'getPatient/${widget.userId}');
+    var url = getLocalhost(unecodedPath: 'api/readPatient/${widget.userId}');
     var response = await http.get(url);
     print(response.body);
     dynamic result = jsonDecode(response.body);
@@ -210,7 +217,7 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
         ),
         Expanded(
           child: Text(
-            doctor['hospital'],
+            doctor['hospitalID'],
             textAlign: TextAlign.center,
             style: TextStyle(
               color: kDarkColor,
@@ -221,6 +228,9 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
         )
       ];
     }
+
+    List<String> accessToDoctors =
+        patient != null ? patient['accessToDoctors'].split(",") : [];
 
     if (_selectedIndex == 0) {
       // List<dynamic> doctors = [
@@ -235,7 +245,7 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
       List<Widget> output = [];
 
       for (var i = 0; i < doctors.length; i++) {
-        if (!patient['doctors'].contains(doctors[i]['doctorId'])) {
+        if (!accessToDoctors.contains(doctors[i]['doctorID'])) {
           continue;
         }
 
@@ -280,7 +290,7 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
       List<Widget> output = [];
 
       for (var i = 0; i < doctors.length; i++) {
-        if (patient['doctors'].contains(doctors[i]['doctorId'])) {
+        if (accessToDoctors.contains(doctors[i]['doctorID'])) {
           continue;
         }
         output.add(

@@ -36,7 +36,7 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
   void fetchMedicines() async {
     // fetch medicines data from the server
     // if (widget.userType == UserType.producer) {
-    var url = getLocalhost(unecodedPath: 'getMedicines');
+    var url = getLocalhost(unecodedPath: 'api/getAllMedicines');
     var response = await http.get(url);
     dynamic result = jsonDecode(response.body);
     setState(() {
@@ -89,23 +89,23 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
             ),
           ),
         ),
-        Expanded(
-          child: Text(
-            medicine['amount'],
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: kDarkColor,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+        // Expanded(
+        //   child: Text(
+        //     medicine['amount'],
+        //     textAlign: TextAlign.center,
+        //     style: TextStyle(
+        //       color: kDarkColor,
+        //       fontSize: 16,
+        //       fontWeight: FontWeight.bold,
+        //     ),
+        //   ),
+        // ),
         Expanded(
           child: Text(
             "Owned by " +
                 (medicine['currentOwner'] == widget.userId
                     ? 'You'
-                    : 'Hospital ' + medicine['currentOwner']),
+                    : '' + medicine['currentOwner']),
             textAlign: TextAlign.center,
             style: TextStyle(
               color: kDarkColor,
@@ -121,10 +121,10 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
       List<Widget> output = [];
 
       for (var i = 0; i < medicines.length; i++) {
-        if (medicines[i]['producerId'] != widget.userId) {
+        if (medicines[i]['producerID'] != widget.userId) {
           continue;
         }
-
+        print(medicines[i]['currentOwner']);
         output.add(
           BaseCard(
             child: Padding(
@@ -135,10 +135,14 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
                   child: IconButton(
                     icon: Icon(Icons.move_down),
                     color: kPrimaryColor,
-                    tooltip: medicines[i]['owner'] == 'You'
+                    tooltip: medicines[i]['currentOwner'] == widget.userId
                         ? "Transfer ownership to hospital"
                         : "This medicine has already been transfered to a hospital.",
-                    onPressed: medicines[i]['owner'] == 'You' ? () {} : null,
+                    onPressed: medicines[i]['currentOwner'] == widget.userId
+                        ? () {
+                            // showDialog(context: context, builder)
+                          }
+                        : null,
                   ),
                 )
               ]),
@@ -191,6 +195,38 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
     }
   }
 
+  Widget textField(String labelText, TextEditingController controller) {
+    final size = MediaQuery.of(context).size;
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(0),
+      borderSide: BorderSide(color: kLightColor),
+    );
+    return SizedBox(
+      width: size.width * 0.35,
+      child: TextField(
+        controller: controller,
+        cursorColor: kLightColor,
+        style: TextStyle(color: kLightColor),
+        decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: TextStyle(color: kLightColor),
+          // hintStyle: TextStyle(color: Colors.grey),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(0),
+            borderSide: BorderSide(color: kPrimaryColor),
+          ),
+          enabledBorder: border,
+          focusedBorder: border,
+          errorBorder: border,
+          focusedErrorBorder: border,
+          // filled: true,
+          // fillColor: Colors.white,
+          // contentPadding: EdgeInsets.all(20),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -204,9 +240,157 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             CustomAppBar(
-              title: 'all\nmedicines',
+              title: widget.userType == UserType.producer
+                  ? 'all\nmedicines'
+                  : 'my\nmedicines',
               icon: Symbols.pill,
             ),
+            if (widget.userType == UserType.producer) ...[
+              SizedBox(height: 64),
+              ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) {
+                      // generate random integer for record ID
+                      var recordId = DateTime.now().millisecondsSinceEpoch;
+                      print(recordId);
+
+                      //           "medicineID": "medicine_1",
+                      // "producerID": "producer_1",
+                      // "name": "Aspirin",
+                      // "productionDate": "2023-01-15",
+                      // "expirationDate": "2025-01-15",
+                      // "currentOwner": "producer_1",
+                      // "previousOwners": "producer_1"
+
+                      // controllers for date, symptom, diagnosis, treatment, prescription
+
+                      TextEditingController nameController =
+                          TextEditingController();
+                      TextEditingController productionDateController =
+                          TextEditingController();
+                      TextEditingController expirationDateController =
+                          TextEditingController();
+                      TextEditingController currentOwnerController =
+                          TextEditingController(text: widget.userId);
+                      TextEditingController medicineIdController =
+                          TextEditingController(text: 'record_$recordId');
+                      TextEditingController producerIdController =
+                          TextEditingController(text: widget.userId);
+                      // TextEditingController Controller =
+                      // TextEditingController();
+
+                      return Dialog(
+                        child: Container(
+                          // height: size.height * .5,
+                          color: kPrimaryColor,
+                          padding: const EdgeInsets.all(32),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                textField("Medicine ID", medicineIdController),
+                                SizedBox(
+                                  height: 16,
+                                ),
+                                textField("Producer ID", producerIdController),
+                                SizedBox(
+                                  height: 16,
+                                ),
+                                // textField("Doctor ID", Controller),
+                                // SizedBox(
+                                //   height: 16,
+                                // ),
+                                textField("Name", nameController),
+                                SizedBox(
+                                  height: 16,
+                                ),
+                                textField("Production Date",
+                                    productionDateController),
+                                SizedBox(
+                                  height: 16,
+                                ),
+                                textField("Expiration Date",
+                                    expirationDateController),
+                                SizedBox(
+                                  height: 16,
+                                ),
+                                textField(
+                                    "Current Owner", currentOwnerController),
+                                SizedBox(
+                                  height: 16,
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    var url = getLocalhost(
+                                        unecodedPath:
+                                            'api/createHealthRecord/record_$recordId');
+                                    var response =
+                                        await http.post(url, headers: {
+                                      'Content-Type':
+                                          'application/json; charset=utf8'
+                                    }, body: {
+                                      "medicineID": medicineIdController.text,
+                                      "producerID": producerIdController.text,
+                                      // "doctorID": Controller.text,
+                                      // "date": dateController.text,
+                                      "name": nameController.text,
+                                      "productionDate":
+                                          productionDateController.text,
+                                      "expirationDate":
+                                          expirationDateController.text,
+                                      "currentOwner":
+                                          currentOwnerController.text,
+                                      "previousOwners": ""
+                                    });
+                                    print(response);
+                                  },
+                                  child: Text(
+                                    "Add Medicine",
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      color: kDarkColor,
+                                    ),
+                                  ),
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        WidgetStateProperty.all(kLightColor),
+                                    padding: WidgetStateProperty.all(
+                                        EdgeInsets.symmetric(
+                                            vertical: 16, horizontal: 32)),
+                                    shape: WidgetStateProperty.all(
+                                        RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(0),
+                                    )),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: Text(
+                  "Add Medicine",
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                  ),
+                ),
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(kPrimaryColor),
+                  padding: WidgetStateProperty.all(
+                      EdgeInsets.symmetric(vertical: 16, horizontal: 32)),
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(0),
+                    ),
+                  ),
+                ),
+              ),
+            ],
             SizedBox(height: 64),
             ...getRecords(),
           ],

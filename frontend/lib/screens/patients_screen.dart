@@ -33,12 +33,22 @@ class _PatientsScreenState extends State<PatientsScreen> {
   }
 
   void fetchPatients() async {
-    var url = getLocalhost(unecodedPath: 'getPatients');
+    var url = getLocalhost(unecodedPath: '/api/getAllPatients');
+    print(url);
     var response = await http.get(url);
+    print(response.body);
     dynamic result = jsonDecode(response.body);
+    dynamic myPatients = [];
+    for (var i = 0; i < result.length; i++) {
+      if (result[i]['accessToDoctors'].split(",").contains(widget.userId)) {
+        myPatients.add(result[i]);
+      }
+    }
     setState(() {
-      patients = result;
+      // patients = myPatients;
+      patients = myPatients;
     });
+    print(patients);
   }
 
   List<Widget> getPatients() {
@@ -57,7 +67,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
         ),
         Expanded(
           child: Text(
-            patient['dateOfBirth'],
+            patient['age'].toString(),
             textAlign: TextAlign.center,
             style: TextStyle(
               color: kDarkColor,
@@ -88,7 +98,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
         ),
         Expanded(
           child: Text(
-            patient['phoneNo'],
+            patient['phone'],
             textAlign: TextAlign.center,
             style: TextStyle(
               color: kDarkColor,
@@ -127,7 +137,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
                     GoRouter.of(context)
                         .pushNamed('patient-records', queryParameters: {
                       'userType': UserType.doctor.name,
-                      'userId': patients[i]['patientId'],
+                      'userId': patients[i]['patientID'],
                     });
                   },
                 ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
-Uri getLocalhost({String authority = '127.0.0.1:8000', String? unecodedPath}) =>
+Uri getLocalhost({String authority = 'localhost:8080', String? unecodedPath}) =>
     Uri.http(authority, unecodedPath ?? '');
 
 const kPrimaryColor = Color(0xFFF87C5A);

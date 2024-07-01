@@ -53,6 +53,16 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
     // }
   }
 
+  Future<dynamic> fetchDoctors() async {
+    var url = getLocalhost(unecodedPath: 'api/getAllHospitals');
+    var response = await http.get(url);
+    dynamic result = jsonDecode(response.body);
+    print(response.body);
+    return result;
+  }
+
+  String _value = 'hospital_1';
+
   List<Widget> getRecords() {
     List<Widget> getRowDetails(medicine) {
       return [
@@ -124,7 +134,7 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
         if (medicines[i]['producerID'] != widget.userId) {
           continue;
         }
-        print(medicines[i]['currentOwner']);
+        // print(medicines[i]['currentOwner']);
         output.add(
           BaseCard(
             child: Padding(
@@ -140,7 +150,120 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
                         : "This medicine has already been transfered to a hospital.",
                     onPressed: medicines[i]['currentOwner'] == widget.userId
                         ? () {
-                            // showDialog(context: context, builder)
+                            final size = MediaQuery.of(context).size;
+                            medicines[i]['previousOwners'] =
+                                medicines[i]['currentOwner'];
+                            showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return FutureBuilder(
+                                    future: fetchDoctors(),
+                                    builder: (_, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      }
+
+                                      // init dropdown
+
+                                      List<DropdownMenuItem<String>>
+                                          dropdownItems = [];
+
+                                      for (var hospital in snapshot.data) {
+                                        dropdownItems.add(DropdownMenuItem(
+                                          value: hospital["hospitalID"],
+                                          child: Text(hospital["name"]),
+                                        ));
+                                      }
+
+                                      return StatefulBuilder(
+                                        builder: (_, setStateSB) => Dialog(
+                                          child: Container(
+                                            height: size.height * .5,
+                                            color: kPrimaryColor,
+                                            padding: const EdgeInsets.all(32),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text("Select Hospital"),
+                                                DropdownButton(
+                                                  value: _value,
+                                                  items: dropdownItems,
+                                                  onChanged: (val) {
+                                                    setStateSB(() {
+                                                      _value = val!;
+                                                    });
+                                                  },
+                                                ),
+                                                SizedBox(
+                                                  height: 32,
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () async {
+                                                    var url = getLocalhost(
+                                                        unecodedPath:
+                                                            'api/updateMedicine/${medicines[i]['medicineID']}');
+                                                    medicines[i]
+                                                            ['previousOwners'] =
+                                                        medicines[i]
+                                                            ['currentOwner'];
+                                                    medicines[i]
+                                                            ['currentOwner'] =
+                                                        _value;
+
+                                                    var response =
+                                                        await http.put(
+                                                      url,
+                                                      headers: {
+                                                        'Content-Type':
+                                                            'application/json'
+                                                      },
+                                                      body: jsonEncode(
+                                                          medicines[i]),
+                                                    );
+                                                    print(response);
+                                                    print(response.statusCode);
+                                                  },
+                                                  child: Text(
+                                                    "Transfer ownership",
+                                                    style: TextStyle(
+                                                      fontSize: 24,
+                                                      color: kDarkColor,
+                                                    ),
+                                                  ),
+                                                  style: ButtonStyle(
+                                                    backgroundColor:
+                                                        WidgetStateProperty.all(
+                                                            kLightColor),
+                                                    padding:
+                                                        WidgetStateProperty.all(
+                                                            EdgeInsets
+                                                                .symmetric(
+                                                                    vertical:
+                                                                        16,
+                                                                    horizontal:
+                                                                        32)),
+                                                    shape:
+                                                        WidgetStateProperty.all(
+                                                      RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(0),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                });
                           }
                         : null,
                   ),
@@ -254,7 +377,7 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
                     builder: (_) {
                       // generate random integer for record ID
                       var recordId = DateTime.now().millisecondsSinceEpoch;
-                      print(recordId);
+                      // print(recordId);
 
                       //           "medicineID": "medicine_1",
                       // "producerID": "producer_1",
@@ -275,7 +398,7 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
                       TextEditingController currentOwnerController =
                           TextEditingController(text: widget.userId);
                       TextEditingController medicineIdController =
-                          TextEditingController(text: 'record_$recordId');
+                          TextEditingController(text: 'medicine_$recordId');
                       TextEditingController producerIdController =
                           TextEditingController(text: widget.userId);
                       // TextEditingController Controller =
@@ -324,12 +447,9 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
                                   onPressed: () async {
                                     var url = getLocalhost(
                                         unecodedPath:
-                                            'api/createHealthRecord/record_$recordId');
-                                    var response =
-                                        await http.post(url, headers: {
-                                      'Content-Type':
-                                          'application/json; charset=utf8'
-                                    }, body: {
+                                            'api/createMedicine/medicine_$recordId');
+
+                                    var body = {
                                       "medicineID": medicineIdController.text,
                                       "producerID": producerIdController.text,
                                       // "doctorID": Controller.text,
@@ -342,8 +462,31 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
                                       "currentOwner":
                                           currentOwnerController.text,
                                       "previousOwners": ""
-                                    });
-                                    print(response);
+                                    };
+
+                                    print("body:");
+                                    print(body);
+                                    print(body.runtimeType);
+
+                                    print("encoded:");
+                                    print(jsonEncode(body));
+                                    print(jsonEncode(body).runtimeType);
+
+                                    print("tostring");
+                                    print(body.toString());
+                                    print(body.toString().runtimeType);
+
+                                    var response = await http.post(
+                                      url,
+                                      headers: {
+                                        'Content-Type': 'application/json'
+                                      },
+                                      // body: body.toString(),
+                                      body: jsonEncode(body),
+                                      // encoding:
+                                    );
+                                    print(response.body);
+                                    print(response.statusCode);
                                   },
                                   child: Text(
                                     "Add Medicine",

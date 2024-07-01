@@ -260,7 +260,21 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
                     icon: Icon(Icons.cancel_outlined),
                     color: Colors.red,
                     tooltip: "Remove doctor from permission list",
-                    onPressed: () {},
+                    onPressed: () async {
+                      var url = getLocalhost(
+                          unecodedPath: "api/updatePatient/${widget.userId}");
+                      accessToDoctors.remove(doctors[i]['doctorID']);
+
+                      doctors[i]['accessToDoctors'] = accessToDoctors.join(",");
+                      var response = await http.put(
+                        url,
+                        body: jsonEncode(doctors[i]),
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                      );
+                      print(response);
+                    },
                   ),
                 )
               ]),
@@ -304,7 +318,21 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
                     icon: Icon(Icons.add_circle_outline),
                     color: Colors.green,
                     tooltip: "Add doctor from permission list",
-                    onPressed: () {},
+                    onPressed: () async {
+                      var url = getLocalhost(
+                          unecodedPath: "api/updatePatient/${widget.userId}");
+                      accessToDoctors.add(doctors[i]['doctorID']);
+
+                      doctors[i]['accessToDoctors'] = accessToDoctors.join(",");
+                      var response = await http.put(
+                        url,
+                        body: jsonEncode(doctors[i]),
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                      );
+                      print(response);
+                    },
                   ),
                 )
               ]),

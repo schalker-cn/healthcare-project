@@ -400,17 +400,21 @@ class _RecordsScreenState extends State<RecordsScreen> {
                                     var url = getLocalhost(
                                         unecodedPath:
                                             'api/createHealthRecord/record_$recordId');
-                                    var response = await http.post(url, body: {
-                                      "recordID": recordIdController.text,
-                                      "patientID": patientIdController.text,
-                                      "doctorID": doctorIdController.text,
-                                      "date": dateController.text,
-                                      "symptom": symptomController.text,
-                                      "diagnosis": diagnosisController.text,
-                                      "treatment": treatmentController.text,
-                                      "prescriptionID":
-                                          prescriptionController.text,
-                                    });
+                                    var response = await http.post(url,
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                        },
+                                        body: jsonEncode({
+                                          "recordID": recordIdController.text,
+                                          "patientID": patientIdController.text,
+                                          "doctorID": doctorIdController.text,
+                                          "date": dateController.text,
+                                          "symptom": symptomController.text,
+                                          "diagnosis": diagnosisController.text,
+                                          "treatment": treatmentController.text,
+                                          "prescriptionID":
+                                              prescriptionController.text,
+                                        }));
                                     print(response);
                                   },
                                   child: Text(

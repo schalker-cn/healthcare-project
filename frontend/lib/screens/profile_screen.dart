@@ -29,7 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final emailController = TextEditingController();
   final addressController = TextEditingController();
   final specialityController = TextEditingController();
-  dynamic user;
+  Map<String, dynamic> user = {};
 
   @override
   void initState() {
@@ -98,7 +98,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       user['phone'] = phoneController.text;
       user['email'] = emailController.text;
 
-      var response = await http.put(url, body: user);
+      var response = await http.put(url, body: jsonEncode(user), headers: {
+        'Content-Type': 'application/json',
+      });
       dynamic result = jsonDecode(response.body);
       print(result);
     } else if (widget.userType == UserType.doctor) {
@@ -108,7 +110,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       user['speciality'] = specialityController.text;
       user['phone'] = phoneController.text;
       user['email'] = emailController.text;
-      var response = await http.put(url, body: user);
+      var response = await http.put(url, body: jsonEncode(user), headers: {
+        'Content-Type': 'application/json',
+      });
       dynamic result = jsonDecode(response.body);
       print(result);
     } else if (widget.userType == UserType.hospital) {
@@ -118,7 +122,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       user['address'] = addressController.text;
       user['phone'] = phoneController.text;
       user['email'] = emailController.text;
-      var response = await http.put(url, body: user);
+      var response = await http.put(url, body: jsonEncode(user), headers: {
+        'Content-Type': 'application/json',
+      });
       dynamic result = jsonDecode(response.body);
       print(result);
     } else if (widget.userType == UserType.producer) {
@@ -128,7 +134,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       user['address'] = addressController.text;
       // user['phone'] = phoneController.text;
       // user['email'] = emailController.text;
-      var response = await http.put(url, body: user);
+      var response = await http.put(url, body: jsonEncode(user), headers: {
+        'Content-Type': 'application/json',
+      });
       dynamic result = jsonDecode(response.body);
       print(result);
     }

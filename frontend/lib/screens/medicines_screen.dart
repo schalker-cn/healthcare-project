@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:html' as html;
 
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
@@ -226,6 +227,8 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
                                                     );
                                                     print(response);
                                                     print(response.statusCode);
+                                                    html.window.location
+                                                        .reload();
                                                   },
                                                   child: Text(
                                                     "Transfer ownership",
@@ -487,6 +490,7 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
                                     );
                                     print(response.body);
                                     print(response.statusCode);
+                                    html.window.location.reload();
                                   },
                                   child: Text(
                                     "Add Medicine",
@@ -535,7 +539,13 @@ class _MedicinesScreenState extends State<MedicinesScreen> {
               ),
             ],
             SizedBox(height: 64),
-            ...getRecords(),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: getRecords(),
+                ),
+              ),
+            ),
           ],
         ),
       ),

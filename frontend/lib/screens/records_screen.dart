@@ -6,6 +6,7 @@ import 'package:frontend/widgets/base_card.dart';
 import 'package:frontend/widgets/custom_app_bar.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:http/http.dart' as http;
+import 'dart:html' as html;
 
 class RecordsScreen extends StatefulWidget {
   const RecordsScreen({
@@ -416,6 +417,7 @@ class _RecordsScreenState extends State<RecordsScreen> {
                                               prescriptionController.text,
                                         }));
                                     print(response);
+                                    html.window.location.reload();
                                   },
                                   child: Text(
                                     "Add Record",

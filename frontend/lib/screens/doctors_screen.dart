@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:html' as html;
 
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
@@ -274,6 +275,7 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
                         },
                       );
                       print(response);
+                      html.window.location.reload();
                     },
                   ),
                 )
@@ -283,6 +285,7 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
         );
         output.add(SizedBox(height: 16));
       }
+
       return output;
     } else {
       // List<dynamic> doctors = [
@@ -332,6 +335,7 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
                         },
                       );
                       print(response);
+                      html.window.location.reload();
                     },
                   ),
                 )
@@ -364,7 +368,11 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
             SizedBox(height: 64),
             getTabs(),
             SizedBox(height: 64),
-            ...getDoctors(),
+            Expanded(
+              child: Column(
+                children: getDoctors(),
+              ),
+            ),
             Spacer(),
           ],
         ),
